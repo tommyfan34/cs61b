@@ -74,8 +74,8 @@ public class ArrayDeque<T> {
             fp = incPointer(fp);
         }
         DecimalFormat df = new DecimalFormat("0.0000");
-        if (size >= 16 && Float.parseFloat(df.format((float)num/size)) < usageFactor) {
-            resize(appropriateSize(size));
+        if (size >= 16 && Float.parseFloat(df.format((float) num / size)) < usageFactor) {
+            resize(appropriateSize(num));
         }
         return ret;
     }
@@ -84,7 +84,7 @@ public class ArrayDeque<T> {
         if (num == 0) {
             return null;
         }
-        T ret = get(num-1);
+        T ret = get(num - 1);
         num -= 1;
         ep = decPointer(ep);
         items[ep] = null;
@@ -93,7 +93,7 @@ public class ArrayDeque<T> {
             ep = -1;
         }
         DecimalFormat df = new DecimalFormat("0.0000");
-        if (size >= 16 && Float.parseFloat(df.format((float)num/size)) < usageFactor) {
+        if (size >= 16 && Float.parseFloat(df.format((float) num / size)) < usageFactor) {
             resize(appropriateSize(num));
         }
         return ret;
@@ -112,9 +112,9 @@ public class ArrayDeque<T> {
             return null;
         }
         if (fp <= size - 1 - index) {
-            return items[fp+index];
+            return items[fp + index];
         } else {
-            return items[fp+index-size];
+            return items[fp + index - size];
         }
     }
 
@@ -128,29 +128,21 @@ public class ArrayDeque<T> {
         System.out.println();
     }
 
-    public void resize(int new_size) {
-        T[] a = (T[]) new Object[new_size];
+    private void resize(int newSize) {
+        T[] a = (T[]) new Object[newSize];
         if (num + fp <= size) {
             System.arraycopy(items, fp, a, 0, num);
         } else {
-            System.arraycopy(items, fp, a, 0, size-fp);
-            System.arraycopy(items, 0, a, size-fp, num-size+fp);
+            System.arraycopy(items, fp, a, 0, size - fp);
+            System.arraycopy(items, 0, a, size - fp, num - size + fp);
         }
         fp = 0;
         ep = num;
-        size = new_size;
+        size = newSize;
         items = a;
     }
 
-    private int appropriateSize(int oldsz) {
-        oldsz *= 4;
-        int temp = 0;
-        while (oldsz != 0) {
-            oldsz /= 2;
-            temp += 1;
-        }
-        temp -= 1;
-        if (temp < 3) temp = 3;
-        return (int)Math.pow(2, temp);
+    private int appropriateSize(int number) {
+        return (number + 1) * 2;
     }
 }

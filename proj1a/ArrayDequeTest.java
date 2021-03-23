@@ -49,11 +49,11 @@ public class ArrayDequeTest {
         ad1.addLast("Six");
         ad1.addLast("Seven");
         ad1.addLast("Eight");
-        for (int i = 0; i < 1000; i++) {
-            ad1.addLast("Test");
+        for (int i = 0; i < 1024; i++) {
+            ad1.addFirst("Test");
         }
-        for (int i = 0; i < 1000; i++) {
-            ad1.removeLast();
+        for (int i = 0; i < 1024; i++) {
+            ad1.removeFirst();
         }
         printTestStatus(passed);
     }
