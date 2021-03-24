@@ -24,4 +24,22 @@ public class Palindrome {
         Deque<Character> cd = wordToDeque(word);
         return helperPalindrome(cd);
     }
+
+    private boolean helperPalindrome(Deque<Character> cd, CharacterComparator cc) {
+        if (cd.size() <= 1) {
+            return true;
+        }
+        Character front = cd.removeFirst();
+        Character back = cd.removeLast();
+        if (!cc.equalChars(front, back)) {
+            return false;
+        } else {
+            return helperPalindrome(cd, cc);
+        }
+    }
+
+    public boolean isPalindrome(String word, CharacterComparator cc) {
+        Deque<Character> cd = wordToDeque(word);
+        return helperPalindrome(cd, cc);
+    }
 }
