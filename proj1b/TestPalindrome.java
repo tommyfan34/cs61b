@@ -28,5 +28,10 @@ public class TestPalindrome {
         assertTrue(palindrome.isPalindrome("flake", obo));
         assertFalse(palindrome.isPalindrome("az", obo));
         assertTrue(palindrome.isPalindrome("", obo));
+
+        CharacterComparator ob5 = new OffByN(5);
+        assertTrue(ob5.equalChars('a', 'f'));
+        assertTrue(ob5.equalChars('f', 'a'));
+        assertFalse(ob5.equalChars('f', 'h'));
     }
 }

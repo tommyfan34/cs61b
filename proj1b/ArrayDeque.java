@@ -1,6 +1,6 @@
 import java.text.DecimalFormat;
 
-public class ArrayDeque<T> implements Deque<T>{
+public class ArrayDeque<T> implements Deque<T> {
     private T[] items;
     private int size;  // the size of the array currently available
     private double usageFactor = 0.25;
