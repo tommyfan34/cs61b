@@ -17,7 +17,7 @@ public class TestArrayRingBuffer {
         arb.enqueue(3);
         arb.enqueue(4);
         assertTrue(arb.isFull());
-        assertEquals((Integer)1, arb.dequeue());
+        assertEquals((Integer) 1, arb.dequeue());
         assertEquals(3, arb.fillCount());
     }
 

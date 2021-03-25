@@ -1,4 +1,3 @@
-// TODO: Make sure to make this class a part of the synthesizer package
 package synthesizer;
 import java.util.Iterator;
 
@@ -21,7 +20,7 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
         rb = (T[]) new Object[capacity];
     }
 
-    private int IncPointer(int index) {
+    private int incPointer(int index) {
         if (index == capacity - 1) {
             return 0;
         } else {
@@ -39,7 +38,7 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
             throw new RuntimeException("The queue is full");
         } else {
             rb[last] = x;
-            last = IncPointer(last);
+            last = incPointer(last);
             fillCount += 1;
         }
     }
@@ -56,7 +55,7 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
             T retVal = rb[first];
             rb[first] = null;
             fillCount -= 1;
-            first = IncPointer(first);
+            first = incPointer(first);
             return retVal;
         }
     }
@@ -68,5 +67,23 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
         return rb[first];
     }
 
-    // TODO: When you get to part 5, implement the needed code to support iteration.
+    @Override
+    public Iterator<T> iterator() {
+        return new KeyIterator();
+    }
+
+    private class KeyIterator implements Iterator<T> {
+        private int ptr;
+        KeyIterator() {
+            ptr = first;
+        }
+        public boolean hasNext() {
+            return (ptr != last);
+        }
+        public T next() {
+            T returnItem =  rb[ptr];
+            ptr = incPointer(ptr);
+            return returnItem;
+        }
+    }
 }
