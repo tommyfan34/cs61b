@@ -50,7 +50,7 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
      */
     public T dequeue() {
         if (isEmpty()) {
-            throw new RuntimeException("The deque is empty");
+            throw new RuntimeException("The queue is empty");
         } else {
             T retVal = rb[first];
             rb[first] = null;
@@ -64,7 +64,11 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
      * Return oldest item, but don't remove it.
      */
     public T peek() {
-        return rb[first];
+        if (isEmpty()) {
+            throw new RuntimeException("The queue is empty");
+        } else {
+            return rb[first];
+        }
     }
 
     @Override
