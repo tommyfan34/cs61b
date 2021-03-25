@@ -1,6 +1,7 @@
 package synthesizer;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import java.util.Iterator;
 
 /** Tests the ArrayRingBuffer class.
  *  @author Josh Hug
@@ -19,6 +20,9 @@ public class TestArrayRingBuffer {
         assertTrue(arb.isFull());
         assertEquals((Integer) 1, arb.dequeue());
         assertEquals(3, arb.fillCount());
+        Iterator<Integer> it = arb.iterator();
+        assertTrue(it.hasNext());
+        assertEquals((Integer) 2, it.next());
     }
 
     /** Calls tests for ArrayRingBuffer. */
