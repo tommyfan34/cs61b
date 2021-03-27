@@ -1,7 +1,11 @@
 package byog.Core;
 
+import byog.SaveDemo.World;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
+
+import java.io.*;
+import java.text.StringCharacterIterator;
 
 public class Game {
     TERenderer ter = new TERenderer();
@@ -33,6 +37,90 @@ public class Game {
         // drawn if the same inputs had been given to playWithKeyboard().
 
         TETile[][] finalWorldFrame = null;
+        StringCharacterIterator it = new StringCharacterIterator(input);
+        Character cur;
+        boolean seedFlag = false;
+        boolean quitFlag = false;
+        int seed = 0;
+        while (it.current() != StringCharacterIterator.DONE) {
+            cur = it.current();
+            if (cur.equals('l') || cur.equals('L')) {
+                finalWorldFrame = loadWorld();
+                break;
+            } else if (cur.equals('n') || cur.equals('N')) {
+                seedFlag = true;
+                quitFlag = false;
+            } else if (Character.isDigit(cur)) {
+                if (seedFlag) {
+                    seed = seed * 10 + cur - '0';
+                }
+            } else if (cur.equals('S') || cur.equals('s')) {
+                finalWorldFrame = generateWorld(seed);
+            } else if (cur.equals(':')) {
+                quitFlag = true;
+                seedFlag = false;
+            } else if (cur.equals('q') || cur.equals('Q')) {
+                if (quitFlag) {
+                    saveWorld(finalWorldFrame);
+                    break;
+                }
+                quitFlag = false;
+                seedFlag = false;
+            }
+            it.next();
+        }
         return finalWorldFrame;
     }
+
+    private static TETile[][] loadWorld() {
+        // TODO: load the world
+        File f = new File("./game.ser");
+        if (f.exists()) {
+            try {
+                FileInputStream fs = new FileInputStream(f);
+                ObjectInputStream os = new ObjectInputStream(fs);
+                TETile[][] loadWorld = (TETile[][]) os.readObject();
+                os.close();
+                return loadWorld;
+            } catch (FileNotFoundException e) {
+                System.out.println("file not found");
+                System.exit(0);
+            } catch (IOException e) {
+                System.out.println(e);
+                System.exit(0);
+            } catch (ClassNotFoundException e) {
+                System.out.println("class not found");
+                System.exit(0);
+            }
+        }
+        TETile[][] retworld = null;
+        return retworld;
+    }
+
+    private static void saveWorld(TETile[][] t) {
+        // TODO: save the world
+        File f = new File("./game.ser");
+        try {
+            if (!f.exists()) {
+                f.createNewFile();
+            }
+            FileOutputStream fs = new FileOutputStream(f);
+            ObjectOutputStream os = new ObjectOutputStream(fs);
+            os.writeObject(t);
+            os.close();
+        }  catch (FileNotFoundException e) {
+            System.out.println("file not found");
+            System.exit(0);
+        } catch (IOException e) {
+            System.out.println(e);
+            System.exit(0);
+        }
+    }
+
+    private static TETile[][] generateWorld(int seed) {
+        // TODO: randomly generate the world
+        TETile[][] retworld = null;
+        return retworld;
+    }
+
 }
