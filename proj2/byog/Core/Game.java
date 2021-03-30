@@ -12,14 +12,19 @@ import java.util.*;
 public class Game {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
-    public static final int WIDTH = 80;
-    public static final int HEIGHT = 30;
-    public static final int ROOMMAXLEN = 8;
+    // width and height should be odd
+    public static final int WIDTH = 81;
+    public static final int HEIGHT = 31;
+    public static final int ROOMMAXLEN = 9;
     public static final int WINDY = 40;
     public static final int NORTH = 0;
     public static final int SOUTH = 1;
     public static final int WEST = 2;
     public static final int EAST = 3;
+    public static final int NORTHWEST = 4;
+    public static final int NORTHEAST = 5;
+    public static final int SOUTHWEST = 6;
+    public static final int SOUTHEAST = 7;
     private int seed;
     private List<Room> rms;
     private List<Hallway> hwys;
@@ -180,10 +185,10 @@ public class Game {
     public void generateRoom(Random r, TETile[][] world) {
         final int limit = 200;
         for (int i = 0; i < limit; i++) {
-            int bottomLeftX = RandomUtils.uniform(r, 1,  WIDTH - 2);
-            int bottomLeftY = RandomUtils.uniform(r, 1, HEIGHT - 2);
-            int upperRightX = RandomUtils.uniform(r, bottomLeftX + 1, Integer.min(WIDTH - 1, bottomLeftX + ROOMMAXLEN));
-            int upperRightY = RandomUtils.uniform(r, bottomLeftY + 1, Integer.min(HEIGHT - 1, bottomLeftY + ROOMMAXLEN));
+            int bottomLeftX = 2 * RandomUtils.uniform(r, 0,  (WIDTH - 3) / 2) + 1;
+            int bottomLeftY = 2 * RandomUtils.uniform(r, 0, (HEIGHT - 3) / 2) + 1;
+            int upperRightX = 2 * RandomUtils.uniform(r, (bottomLeftX + 1) / 2, Integer.min(WIDTH - 1, bottomLeftX + ROOMMAXLEN) / 2) + 1;
+            int upperRightY = 2 * RandomUtils.uniform(r, (bottomLeftY + 1) / 2, Integer.min(HEIGHT - 1, bottomLeftY + ROOMMAXLEN) / 2) + 1;
             Room rm = new Room(new Coordinate(bottomLeftX, bottomLeftY), new Coordinate(upperRightX, upperRightY));
             if (!isRoomOverlap(rms, rm)) {
                 rms.add(rm);
@@ -273,8 +278,7 @@ public class Game {
                 if (cord2.x <= 0 || cord2.x >= WIDTH - 1 || cord2.y <= 0 || cord2.y >= HEIGHT - 1) {
                     continue;
                 }
-                if (world[cord1.x][cord1.y].equals(Tileset.NOTHING)
-                        && world[cord2.x][cord2.y].equals(Tileset.NOTHING)) {
+                if (world[cord2.x][cord2.y].equals(Tileset.NOTHING)) {
                     availableDir.add(i);
                 }
             }
@@ -312,6 +316,14 @@ public class Game {
                 return new Coordinate(cor.x - distance, cor.y);
             case EAST:
                 return new Coordinate(cor.x + distance, cor.y);
+            case NORTHWEST:
+                return new Coordinate(cor.x - 1, cor.y + 1);
+            case NORTHEAST:
+                return new Coordinate(cor.x + 1, cor.y + 1);
+            case SOUTHWEST:
+                return new Coordinate(cor.x - 1, cor.y - 1);
+            case SOUTHEAST:
+                return new Coordinate(cor.x + 1, cor.y - 1);
             default:
                 return null;
         }
@@ -320,7 +332,7 @@ public class Game {
     private void hallwayWall(Hallway hwy, TETile[][] world) {
         for (int i = 0; i < hwy.coords.size(); i++) {
             Coordinate cor = hwy.coords.get(i);
-            for (int j = 0; j < 4; j++) {
+            for (int j = 0; j < 8; j++) {
                 Coordinate cor2 = applyDir(j, 1, cor);
                 if (world[cor2.x][cor2.y].equals(Tileset.NOTHING)) {
                     world[cor2.x][cor2.y] = Tileset.WALL;
