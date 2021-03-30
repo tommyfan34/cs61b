@@ -142,13 +142,6 @@ public class Game {
         }
     }
 
-    private class Hallway {
-        List<Coordinate> coords;
-        public Hallway() {
-            coords = new ArrayList<>();
-        }
-    }
-
     private class Coordinate {
         int x;
         int y;
@@ -158,15 +151,34 @@ public class Game {
         }
     }
 
-    private class Room {
-        Coordinate upperRight;
-        Coordinate bottomLeft;
-        public Room(Coordinate bl, Coordinate ur) {
-            upperRight = ur;
-            bottomLeft = bl;
+    private class Hallway {
+        List<Coordinate> coords;
+        List<Coordinate> connects;
+        boolean connected;
+        public Hallway() {
+            coords = new ArrayList<>();
+            connects = new ArrayList<>();
+            connected = false;
         }
     }
 
+    private class Room {
+        Coordinate upperRight;
+        Coordinate bottomLeft;
+        List<Coordinate> connects;
+        boolean connected;
+        public Room(Coordinate bl, Coordinate ur) {
+            upperRight = ur;
+            bottomLeft = bl;
+            connected = false;
+            connects = new ArrayList<>();
+        }
+    }
+
+    /** Randomly generate the world
+     *
+     * @return
+     */
     private TETile[][] generateWorld() {
         // TODO: randomly generate the world
         TETile[][] world = new TETile[WIDTH][HEIGHT];
@@ -179,9 +191,22 @@ public class Game {
         }
         generateRoom(r, world);
         generateMaze(world, r);
+        findConnects(world);
+        for (int i = 0; i < rms.size(); i++) {
+            Room rm = rms.get(i);
+            for (int j = 0; j < rm.connects.size(); j++) {
+                Coordinate cor = rm.connects.get(j);
+                world[cor.x][cor.y] = Tileset.FLOWER;
+            }
+        }
         return world;
     }
 
+    /** Randomly generate rooms
+     *
+     * @param r
+     * @param world
+     */
     public void generateRoom(Random r, TETile[][] world) {
         final int limit = 200;
         for (int i = 0; i < limit; i++) {
@@ -197,6 +222,12 @@ public class Game {
         fillRoom(rms, world);
     }
 
+    /** Determine whether two rooms are overlap given a list of
+     * Rooms and the room
+     * @param rms
+     * @param rm
+     * @return
+     */
     private boolean isRoomOverlap(List<Room> rms, Room rm) {
         for (int i = 0; i < rms.size(); i++) {
             Room rmPtr = rms.get(i);
@@ -210,6 +241,7 @@ public class Game {
         return false;
     }
 
+    /** Fill room with floor and surrounded it with wall */
     private void fillRoom(List<Room> rms, TETile[][] world) {
         for (int i = 0; i < rms.size(); i++) {
             Room rm = rms.get(i);
@@ -229,6 +261,7 @@ public class Game {
         }
     }
 
+    /** Maze generation */
     public void generateMaze(TETile[][] world, Random r) {
         for (int x = 1; x < WIDTH - 1; x++) {
             for (int y = 1; y < HEIGHT - 1; y++) {
@@ -243,26 +276,16 @@ public class Game {
         }
     }
 
+    /** Flood fill algorithm to generate the maze */
     private void floodFill(TETile[][] world, Coordinate cor, Random r, Hallway hwy) {
         int x = cor.x;
         int y = cor.y;
         if (world[x][y].equals(Tileset.FLOOR) || world[x][y].equals(Tileset.WALL)) {
             return;
         }
-//        boolean surroundedByWall = true;
-//        for (int i = 0; i < 4; i++) {
-//            Coordinate temp = applyDir(i, 1, cor);
-//            if (!world[temp.x][temp.y].equals(Tileset.WALL)) {
-//                surroundedByWall = false;
-//            }
-//        }
-//        if (surroundedByWall) {
-//            return;
-//        }
         if (x == 0 || x == WIDTH - 1 || y == 0 || y == HEIGHT - 1) {
             return;
         }
-        //hwy.coords.add(new Coordinate(x, y));
         ArrayDeque<Coordinate> stack = new ArrayDeque<>();
         stack.add(cor);
         hwy.coords.add(cor);
@@ -306,6 +329,7 @@ public class Game {
         }
     }
 
+    /** Apply direction and distance to coordinate and returns coordinate */
     private Coordinate applyDir(int dir, int distance, Coordinate cor) {
         switch (dir) {
             case NORTH:
@@ -329,6 +353,7 @@ public class Game {
         }
     }
 
+    /** Generate wall for hallways */
     private void hallwayWall(Hallway hwy, TETile[][] world) {
         for (int i = 0; i < hwy.coords.size(); i++) {
             Coordinate cor = hwy.coords.get(i);
@@ -340,4 +365,60 @@ public class Game {
             }
         }
     }
+
+    /** Find the connections between different part */
+    public void findConnects(TETile[][] world) {
+        for (int x = 1; x < WIDTH - 1; x++) {
+            for (int y = 1; y < HEIGHT - 1; y++) {
+                if (world[x][y].equals(Tileset.WALL)) {
+                    List<Coordinate> floorCor = new ArrayList<>();
+                    for (int i = 0; i < 4; i++) {
+                        Coordinate cor = applyDir(i, 1, new Coordinate(x, y));
+                        if (world[cor.x][cor.y].equals(Tileset.FLOOR)) {
+                            floorCor.add(cor);
+                        }
+                    }
+                    if (floorCor.size() == 2) {
+                        List<Object> belongsTo = new ArrayList<>();
+                        // find the two floor belongs to which room / hallway
+                        for (int i = 0; i < 2; i++) {
+                            Coordinate cor = floorCor.get(i);
+                            for (int j = 0; j < rms.size(); j++) {
+                                Room rm = rms.get(j);
+                                if (((cor.x == rm.bottomLeft.x || cor.x == rm.upperRight.x)
+                                        && (cor.y <= rm.upperRight.y && cor.y >= rm.bottomLeft.y))
+                                        || ((cor.y == rm.bottomLeft.y || cor.y == rm.upperRight.y)
+                                        && (cor.x <= rm.upperRight.x && cor.x >= rm.bottomLeft.x))) {
+                                    belongsTo.add(rm);
+                                    break;
+                                }
+                            }
+                            for (int j = 0; j < hwys.size(); j++) {
+                                Hallway hwy = hwys.get(j);
+                                for (int k = 0; k < hwy.coords.size(); k++) {
+                                    Coordinate temp = hwy.coords.get(k);
+                                    if (temp.x == cor.x && temp.y == cor.y) {
+                                        belongsTo.add(hwy);
+                                    }
+                                }
+                            }
+                        }
+                        if (belongsTo.size() == 2 && !belongsTo.get(0).equals(belongsTo.get(1))) {
+                            for (int i = 0; i < 2; i++) {
+                                if (belongsTo.get(i) instanceof Room) {
+                                    Room rm = (Room) belongsTo.get(i);
+                                    rm.connects.add(new Coordinate(x, y));
+                                } else if (belongsTo.get(i) instanceof Hallway) {
+                                    Hallway hwy = (Hallway) belongsTo.get(i);
+                                    hwy.connects.add(new Coordinate(x, y));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 }
