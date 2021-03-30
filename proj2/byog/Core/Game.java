@@ -25,7 +25,7 @@ public class Game {
     public static final int NORTHEAST = 5;
     public static final int SOUTHWEST = 6;
     public static final int SOUTHEAST = 7;
-    public static final int MULTICONNECTS = 2;
+    public static final int MULTICONNECTS = 1;
     private int seed;
     private List<Room> rms;
     private List<Hallway> hwys;
@@ -203,6 +203,7 @@ public class Game {
         generateRoom(r, world);
         generateMaze(world, r);
         findConnects(world);
+        connectRegions(world, r);
         return world;
     }
 
@@ -422,19 +423,36 @@ public class Game {
     /** Connect rooms and hallways */
     public void connectRegions(TETile[][] world, Random r) {
         int index = RandomUtils.uniform(r, rms.size());
-        List<Connect> conts = rms.get(index).connects;
+        List<Connect> conts = new ArrayList<>(rms.get(index).connects);
         rms.get(index).connected = true;
         while (!conts.isEmpty()) {
             index = RandomUtils.uniform(r, conts.size());
             Connect cont = conts.get(index);
             Coordinate cord = cont.coord;
-            world[cord.x][cord.y] = Tileset.FLOOR;
+            if (!cont.connectTo.connected) {
+                world[cord.x][cord.y] = Tileset.FLOOR;
+            }
             for (int i = 0; i < conts.size(); i++) {
                 Connect cnt = conts.get(i);
+                Coordinate cord1 = cnt.coord;
                 Region rj = cnt.connectTo;
-
+                if (rj.connected) {
+                    // a slight chance of multi connections to a single region
+                    if (RandomUtils.uniform(r, 100) < MULTICONNECTS) {
+                        world[cord1.x][cord1.y] = Tileset.FLOOR;
+                    }
+                    // remove this connect from conts
+                    conts.remove(i);
+                }
             }
             Region rj = cont.connectTo;
+            if (!rj.connected) {
+                for (int i = 0; i < rj.connects.size(); i++) {
+                    conts.add(rj.connects.get(i));
+                }
+                rj.connected = true;
+            }
+            // ter.renderFrame(world);
         }
     }
 
