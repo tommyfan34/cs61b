@@ -151,9 +151,18 @@ public class Game {
         }
     }
 
+    private class Connect {
+        Coordinate coord;
+        Object connectTo;
+        public Connect(Coordinate c, Object obj) {
+            coord = c;
+            connectTo = obj;
+        }
+    }
+
     private class Hallway {
         List<Coordinate> coords;
-        List<Coordinate> connects;
+        List<Connect> connects;
         boolean connected;
         public Hallway() {
             coords = new ArrayList<>();
@@ -165,7 +174,7 @@ public class Game {
     private class Room {
         Coordinate upperRight;
         Coordinate bottomLeft;
-        List<Coordinate> connects;
+        List<Connect> connects;
         boolean connected;
         public Room(Coordinate bl, Coordinate ur) {
             upperRight = ur;
@@ -195,7 +204,7 @@ public class Game {
         for (int i = 0; i < rms.size(); i++) {
             Room rm = rms.get(i);
             for (int j = 0; j < rm.connects.size(); j++) {
-                Coordinate cor = rm.connects.get(j);
+                Coordinate cor = rm.connects.get(j).coord;
                 world[cor.x][cor.y] = Tileset.FLOWER;
             }
         }
@@ -407,10 +416,10 @@ public class Game {
                             for (int i = 0; i < 2; i++) {
                                 if (belongsTo.get(i) instanceof Room) {
                                     Room rm = (Room) belongsTo.get(i);
-                                    rm.connects.add(new Coordinate(x, y));
+                                    rm.connects.add(new Connect(new Coordinate(x, y), belongsTo.get(1 - i)));
                                 } else if (belongsTo.get(i) instanceof Hallway) {
                                     Hallway hwy = (Hallway) belongsTo.get(i);
-                                    hwy.connects.add(new Coordinate(x, y));
+                                    hwy.connects.add(new Connect(new Coordinate(x, y), belongsTo.get(1 - i)));
                                 }
                             }
                         }
