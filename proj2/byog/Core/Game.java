@@ -1,13 +1,21 @@
 package byog.Core;
 
-import byog.SaveDemo.World;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.StringCharacterIterator;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.ArrayDeque;
 
 public class Game {
     TERenderer ter = new TERenderer();
@@ -55,13 +63,9 @@ public class Game {
      * to get the exact same world back again, since this corresponds to loading the saved game.
      * @param input the input string to feed to your program
      * @return the 2D TETile[][] representing the state of the world
-     * @source https://indienova.com/indie-game-development/rooms-and-mazes-a-procedural-dungeon-generator/#iah-5
+     * @source
      */
     public TETile[][] playWithInputString(String input) {
-        // TODO: Fill out this method to run the game using the input passed in,
-        // and return a 2D tile representation of the world that would have been
-        // drawn if the same inputs had been given to playWithKeyboard().
-
         TETile[][] finalWorldFrame = null;
         StringCharacterIterator it = new StringCharacterIterator(input);
         Character cur;
@@ -99,7 +103,6 @@ public class Game {
     }
 
     private static TETile[][] loadWorld() {
-        // TODO: load the world
         File f = new File("./game.ser");
         if (f.exists()) {
             try {
@@ -124,7 +127,6 @@ public class Game {
     }
 
     private static void saveWorld(TETile[][] t) {
-        // TODO: save the world
         File f = new File("./game.ser");
         try {
             if (!f.exists()) {
@@ -146,7 +148,7 @@ public class Game {
     private class Coordinate {
         int x;
         int y;
-        public Coordinate(int a, int b) {
+        Coordinate(int a, int b) {
             x = a;
             y = b;
         }
@@ -155,7 +157,7 @@ public class Game {
     private class Connect {
         Coordinate coord;
         Region connectTo;
-        public Connect(Coordinate c, Region rj) {
+        Connect(Coordinate c, Region rj) {
             coord = c;
             connectTo = rj;
         }
@@ -168,7 +170,7 @@ public class Game {
 
     private class Hallway extends Region {
         List<Coordinate> coords;
-        public Hallway() {
+        Hallway() {
             coords = new ArrayList<>();
             connects = new ArrayList<>();
             connected = false;
@@ -178,7 +180,7 @@ public class Game {
     private class Room extends Region {
         Coordinate upperRight;
         Coordinate bottomLeft;
-        public Room(Coordinate bl, Coordinate ur) {
+        Room(Coordinate bl, Coordinate ur) {
             upperRight = ur;
             bottomLeft = bl;
             connected = false;
@@ -191,7 +193,6 @@ public class Game {
      * @return
      */
     private TETile[][] generateWorld() {
-        // TODO: randomly generate the world
         TETile[][] world = new TETile[WIDTH][HEIGHT];
         Random r = new Random(seed);
         // initialize tiles
@@ -204,6 +205,8 @@ public class Game {
         generateMaze(world, r);
         findConnects(world);
         connectRegions(world, r);
+        removeDeadEnds(world);
+        addDoor(world, r);
         return world;
     }
 
@@ -217,28 +220,32 @@ public class Game {
         for (int i = 0; i < limit; i++) {
             int bottomLeftX = 2 * RandomUtils.uniform(r, 0,  (WIDTH - 3) / 2) + 1;
             int bottomLeftY = 2 * RandomUtils.uniform(r, 0, (HEIGHT - 3) / 2) + 1;
-            int upperRightX = 2 * RandomUtils.uniform(r, (bottomLeftX + 1) / 2, Integer.min(WIDTH - 1, bottomLeftX + ROOMMAXLEN) / 2) + 1;
-            int upperRightY = 2 * RandomUtils.uniform(r, (bottomLeftY + 1) / 2, Integer.min(HEIGHT - 1, bottomLeftY + ROOMMAXLEN) / 2) + 1;
-            Room rm = new Room(new Coordinate(bottomLeftX, bottomLeftY), new Coordinate(upperRightX, upperRightY));
-            if (!isRoomOverlap(rms, rm)) {
+            int upperRightX = 2 * RandomUtils.uniform(r, (bottomLeftX + 1) / 2,
+                    Integer.min(WIDTH - 1, bottomLeftX + ROOMMAXLEN) / 2) + 1;
+            int upperRightY = 2 * RandomUtils.uniform(r, (bottomLeftY + 1) / 2,
+                    Integer.min(HEIGHT - 1, bottomLeftY + ROOMMAXLEN) / 2) + 1;
+            Room rm = new Room(new Coordinate(bottomLeftX, bottomLeftY),
+                    new Coordinate(upperRightX, upperRightY));
+            if (!isRoomOverlap(rm)) {
                 rms.add(rm);
             }
         }
-        fillRoom(rms, world);
+        fillRoom(world);
     }
 
     /** Determine whether two rooms are overlap given a list of
      * Rooms and the room
-     * @param rms
      * @param rm
      * @return
      */
-    private boolean isRoomOverlap(List<Room> rms, Room rm) {
+    private boolean isRoomOverlap(Room rm) {
         for (int i = 0; i < rms.size(); i++) {
             Room rmPtr = rms.get(i);
             boolean res;
-            res = !(rm.upperRight.x +1 < rmPtr.bottomLeft.x || rm.bottomLeft.y - 1 > rmPtr.upperRight.y
-            || rm.bottomLeft.x - 1 > rmPtr.upperRight.x || rm.upperRight.y + 1 < rmPtr.bottomLeft.y);
+            res = !(rm.upperRight.x + 1 < rmPtr.bottomLeft.x
+                    || rm.bottomLeft.y - 1 > rmPtr.upperRight.y
+                    || rm.bottomLeft.x - 1 > rmPtr.upperRight.x
+                    || rm.upperRight.y + 1 < rmPtr.bottomLeft.y);
             if (res) {
                 return res;
             }
@@ -247,7 +254,7 @@ public class Game {
     }
 
     /** Fill room with floor and surrounded it with wall */
-    private void fillRoom(List<Room> rms, TETile[][] world) {
+    private void fillRoom(TETile[][] world) {
         for (int i = 0; i < rms.size(); i++) {
             Room rm = rms.get(i);
             for (int x = rm.bottomLeft.x; x <= rm.upperRight.x; x++) {
@@ -393,7 +400,8 @@ public class Game {
                                 if (((cor.x == rm.bottomLeft.x || cor.x == rm.upperRight.x)
                                         && (cor.y <= rm.upperRight.y && cor.y >= rm.bottomLeft.y))
                                         || ((cor.y == rm.bottomLeft.y || cor.y == rm.upperRight.y)
-                                        && (cor.x <= rm.upperRight.x && cor.x >= rm.bottomLeft.x))) {
+                                        && (cor.x <= rm.upperRight.x
+                                        && cor.x >= rm.bottomLeft.x))) {
                                     belongsTo.add(rm);
                                     break;
                                 }
@@ -411,7 +419,8 @@ public class Game {
                         if (belongsTo.size() == 2 && !belongsTo.get(0).equals(belongsTo.get(1))) {
                             for (int i = 0; i < 2; i++) {
                                 Region rj = belongsTo.get(i);
-                                rj.connects.add(new Connect(new Coordinate(x, y), belongsTo.get(1 - i)));
+                                rj.connects.add(new Connect(new Coordinate(x, y),
+                                        belongsTo.get(1 - i)));
                             }
                         }
                     }
@@ -452,9 +461,96 @@ public class Game {
                 }
                 rj.connected = true;
             }
-            // ter.renderFrame(world);
         }
     }
 
+    /** remove all the dead ends on map
+     *
+     * @param world
+     */
+    public void removeDeadEnds(TETile[][] world) {
+        while (true) {
+            boolean noDeadEnds = true;
+            for (int x = 0; x < WIDTH; x++) {
+                for (int y = 0; y < HEIGHT; y++) {
+                    if (world[x][y].equals(Tileset.FLOOR)) {
+                        int num = 0;
+                        for (int i = 0; i < 4; i++) {
+                            Coordinate cor = applyDir(i, 1, new Coordinate(x, y));
+                            if (world[cor.x][cor.y].equals(Tileset.WALL)) {
+                                num++;
+                            }
+                        }
+                        if (num == 3) {
+                            world[x][y] = Tileset.WALL;
+                            noDeadEnds = false;
+                        }
+                    }
+                }
+            }
+            if (noDeadEnds) {
+                break;
+            }
+        }
 
+        // remove extra walls
+        List<Coordinate> toRemove = new ArrayList<>();
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                boolean redundant = true;
+                for (int i = 0; i < 8; i++) {
+                    Coordinate cord = applyDir(i, 1, new Coordinate(x, y));
+                    if (cord.x < 0 || cord.x >= WIDTH || cord.y < 0 || cord.y >= HEIGHT) {
+                        continue;
+                    }
+                    if (!world[cord.x][cord.y].equals(Tileset.WALL)) {
+                        redundant = false;
+                        break;
+                    }
+                }
+                if (redundant) {
+                    toRemove.add(new Coordinate(x, y));
+                }
+            }
+        }
+        for (int i = 0; i < toRemove.size(); i++) {
+            Coordinate cor = toRemove.get(i);
+            world[cor.x][cor.y] = Tileset.NOTHING;
+        }
+    }
+
+    /** Randomly add a door to the floor
+     *
+     * @param world
+     * @param r
+     */
+    public void addDoor(TETile[][] world, Random r) {
+        List<Coordinate> walls = new ArrayList<>();
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                if (world[x][y].equals(Tileset.WALL)) {
+                    boolean hasNothing = false;
+                    boolean hasFloor = false;
+                    for (int i = 0; i < 4; i++) {
+                        Coordinate cor = applyDir(i, 1, new Coordinate(x, y));
+                        if (cor.x < 0 || cor.x >= WIDTH || cor.y < 0 || cor.y >= HEIGHT) {
+                            hasNothing = true;
+                            continue;
+                        }
+                        if (world[cor.x][cor.y].equals(Tileset.FLOOR)) {
+                            hasFloor = true;
+                        } else if (world[cor.x][cor.y].equals(Tileset.NOTHING)) {
+                            hasNothing = true;
+                        }
+                    }
+                    if (hasFloor && hasNothing) {
+                        walls.add(new Coordinate(x, y));
+                    }
+                }
+            }
+        }
+        int index = RandomUtils.uniform(r, walls.size());
+        Coordinate cor = walls.get(index);
+        world[cor.x][cor.y] = Tileset.LOCKED_DOOR;
+    }
 }
