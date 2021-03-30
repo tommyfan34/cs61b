@@ -25,6 +25,7 @@ public class Game {
     public static final int NORTHEAST = 5;
     public static final int SOUTHWEST = 6;
     public static final int SOUTHEAST = 7;
+    public static final int MULTICONNECTS = 2;
     private int seed;
     private List<Room> rms;
     private List<Hallway> hwys;
@@ -153,17 +154,20 @@ public class Game {
 
     private class Connect {
         Coordinate coord;
-        Object connectTo;
-        public Connect(Coordinate c, Object obj) {
+        Region connectTo;
+        public Connect(Coordinate c, Region rj) {
             coord = c;
-            connectTo = obj;
+            connectTo = rj;
         }
     }
 
-    private class Hallway {
-        List<Coordinate> coords;
+    private class Region {
         List<Connect> connects;
         boolean connected;
+    }
+
+    private class Hallway extends Region {
+        List<Coordinate> coords;
         public Hallway() {
             coords = new ArrayList<>();
             connects = new ArrayList<>();
@@ -171,11 +175,9 @@ public class Game {
         }
     }
 
-    private class Room {
+    private class Room extends Region {
         Coordinate upperRight;
         Coordinate bottomLeft;
-        List<Connect> connects;
-        boolean connected;
         public Room(Coordinate bl, Coordinate ur) {
             upperRight = ur;
             bottomLeft = bl;
@@ -201,13 +203,6 @@ public class Game {
         generateRoom(r, world);
         generateMaze(world, r);
         findConnects(world);
-        for (int i = 0; i < rms.size(); i++) {
-            Room rm = rms.get(i);
-            for (int j = 0; j < rm.connects.size(); j++) {
-                Coordinate cor = rm.connects.get(j).coord;
-                world[cor.x][cor.y] = Tileset.FLOWER;
-            }
-        }
         return world;
     }
 
@@ -388,7 +383,7 @@ public class Game {
                         }
                     }
                     if (floorCor.size() == 2) {
-                        List<Object> belongsTo = new ArrayList<>();
+                        List<Region> belongsTo = new ArrayList<>();
                         // find the two floor belongs to which room / hallway
                         for (int i = 0; i < 2; i++) {
                             Coordinate cor = floorCor.get(i);
@@ -414,18 +409,32 @@ public class Game {
                         }
                         if (belongsTo.size() == 2 && !belongsTo.get(0).equals(belongsTo.get(1))) {
                             for (int i = 0; i < 2; i++) {
-                                if (belongsTo.get(i) instanceof Room) {
-                                    Room rm = (Room) belongsTo.get(i);
-                                    rm.connects.add(new Connect(new Coordinate(x, y), belongsTo.get(1 - i)));
-                                } else if (belongsTo.get(i) instanceof Hallway) {
-                                    Hallway hwy = (Hallway) belongsTo.get(i);
-                                    hwy.connects.add(new Connect(new Coordinate(x, y), belongsTo.get(1 - i)));
-                                }
+                                Region rj = belongsTo.get(i);
+                                rj.connects.add(new Connect(new Coordinate(x, y), belongsTo.get(1 - i)));
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    /** Connect rooms and hallways */
+    public void connectRegions(TETile[][] world, Random r) {
+        int index = RandomUtils.uniform(r, rms.size());
+        List<Connect> conts = rms.get(index).connects;
+        rms.get(index).connected = true;
+        while (!conts.isEmpty()) {
+            index = RandomUtils.uniform(r, conts.size());
+            Connect cont = conts.get(index);
+            Coordinate cord = cont.coord;
+            world[cord.x][cord.y] = Tileset.FLOOR;
+            for (int i = 0; i < conts.size(); i++) {
+                Connect cnt = conts.get(i);
+                Region rj = cnt.connectTo;
+
+            }
+            Region rj = cont.connectTo;
         }
     }
 
