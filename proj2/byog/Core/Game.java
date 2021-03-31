@@ -17,16 +17,22 @@ import java.util.Random;
 
 public class Game {
     TERenderer ter = new TERenderer();
-    /* Feel free to change the width and height. */
-    // width and height should be odd
-
     private long seed;
-    private Random r;
+    private int seedTextIndention = 0;
+    private static final String PATH = "./game.txt";
+    private enum States {
+        WELCOME, TO_QUIT, TO_INPUT_SEED, GAME
+    }
+    private States state;
+    private static final int STRINGMODE = 0;
+    private static final int KEYBOARDMODE = 1;
+    private GameState gameState;
 
 
     public Game() {
-        seed = 0;
         ter.initialize(byog.Core.MapGenerator.WIDTH, byog.Core.MapGenerator.HEIGHT);
+        state = States.WELCOME;
+        gameState = new GameState();
     }
 
     /**
@@ -34,81 +40,14 @@ public class Game {
      */
     public void playWithKeyboard() {
         drawMenu();
-        boolean inputSeed = false;
-        boolean quitFlag = false;
-        int seedTextIndention = 0;
-        GameState gameState = new GameState();
         while (true) {
             if (StdDraw.hasNextKeyTyped()) {
                 char c = StdDraw.nextKeyTyped();
-                if (c == 'n' || c == 'N') {
-                    Font font = new Font("Arial", Font.PLAIN, 50);
-                    StdDraw.setFont(font);
-                    StdDraw.text(30, 5, "Type seed: ");
-                    inputSeed = true;
-                    quitFlag = false;
-                    seed = 0;
-                } else if (Character.isDigit(c)) {
-                    if (inputSeed) {
-                        seed = seed * 10 + c - '0';
-                        StdDraw.text(40 + 3 * seedTextIndention, 5, String.valueOf(c));
-                        seedTextIndention++;
-                    }
-                    quitFlag = false;
-                } else if (c == 's' || c == 'S') {
-                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
-                    StdDraw.setFont(font);
-                    r = new Random(seed);
-                    gameState.world = MapGenerator.generateWorld(r);
-                    System.out.println(TETile.toString(gameState.world));
-                    ter.renderFrame(gameState.world);
-                } else if (c == '\b') {
-                    if (inputSeed) {
-                        seed /= 10;
-                        StdDraw.setPenColor(StdDraw.BLACK);
-                        StdDraw.filledSquare(40 + 3 * seedTextIndention - 3, 5, 2);
-                        StdDraw.setPenColor(StdDraw.WHITE);
-                        if (seedTextIndention != 0) {
-                            seedTextIndention--;
-                        }
-                    }
-                    quitFlag = false;
-                } else if (c == 'q') {
-                    if (quitFlag) {
-                        saveWorld(gameState);
-                        break;
-                    }
-                    quitFlag = false;
-                    inputSeed = false;
-                } else if (c == ':') {
-                    quitFlag = true;
-                    inputSeed = false;
-                } else if (c == 'l' || c == 'L') {
-                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
-                    StdDraw.setFont(font);
-                    gameState = loadWorld();
-                    ter.renderFrame(gameState.world);
-                }
+                processChar(c, KEYBOARDMODE);
                 StdDraw.show();
             }
         }
-        System.exit(0);
     }
-
-    private void drawMenu() {
-        StdDraw.clear(StdDraw.BLACK);
-        StdDraw.setPenColor(StdDraw.WHITE);
-        Font font1 = new Font("Arial", Font.PLAIN, 70);
-        Font font2 = new Font("Arial", Font.PLAIN, 50);
-        StdDraw.setFont(font1);
-        StdDraw.text(40, 25, "CS61B: THE GAME");
-        StdDraw.setFont(font2);
-        StdDraw.text(40, 20, "New Game (N)");
-        StdDraw.text(40, 15, "Load Game (L)");
-        StdDraw.text(40, 10, "Quit (Q)");
-        StdDraw.show();
-    }
-
 
     /**
      * Method used for autograding and testing the game code. The input string will be a series
@@ -124,45 +63,19 @@ public class Game {
      * @source
      */
     public TETile[][] playWithInputString(String input) {
-        TETile[][] finalWorldFrame = null;
         StringCharacterIterator it = new StringCharacterIterator(input);
-        Character cur;
-        boolean seedFlag = false;
-        boolean quitFlag = false;
+        char cur;
 
         while (it.current() != StringCharacterIterator.DONE) {
             cur = it.current();
-            if (cur.equals('l') || cur.equals('L')) {
-                finalWorldFrame = loadWorld().world;
-                break;
-            } else if (cur.equals('n') || cur.equals('N')) {
-                seedFlag = true;
-                seed = 0;
-                quitFlag = false;
-            } else if (Character.isDigit(cur)) {
-                if (seedFlag) {
-                    seed = seed * 10 + cur - '0';
-                }
-            } else if (cur.equals('S') || cur.equals('s')) {
-                finalWorldFrame = MapGenerator.generateWorld(r);
-            } else if (cur.equals(':')) {
-                quitFlag = true;
-                seedFlag = false;
-            } else if (cur.equals('q') || cur.equals('Q')) {
-                if (quitFlag) {
-                    saveWorld(new GameState(finalWorldFrame, r));
-                    break;
-                }
-                quitFlag = false;
-                seedFlag = false;
-            }
+            processChar(cur, STRINGMODE);
             it.next();
         }
-        return finalWorldFrame;
+        return gameState.world;
     }
 
-    private static GameState loadWorld() {
-        File f = new File("./game.txt");
+    private GameState loadWorld() {
+        File f = new File(PATH);
         if (f.exists()) {
             try {
                 FileInputStream fs = new FileInputStream(f);
@@ -185,15 +98,15 @@ public class Game {
         return retworld;
     }
 
-    private static void saveWorld(GameState t) {
-        File f = new File("./game.txt");
+    private void saveWorld() {
+        File f = new File(PATH);
         try {
             if (!f.exists()) {
                 f.createNewFile();
             }
             FileOutputStream fs = new FileOutputStream(f);
             ObjectOutputStream os = new ObjectOutputStream(fs);
-            os.writeObject(t);
+            os.writeObject(gameState);
             os.close();
         } catch (FileNotFoundException e) {
             System.out.println("file not found");
@@ -201,6 +114,87 @@ public class Game {
         } catch (IOException e) {
             System.out.println(e);
             System.exit(0);
+        }
+    }
+
+    private void drawMenu() {
+        StdDraw.clear(StdDraw.BLACK);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        Font font1 = new Font("Sans Serif", Font.PLAIN, 70);
+        Font font2 = new Font("Sans Serif", Font.PLAIN, 50);
+        StdDraw.setFont(font1);
+        StdDraw.text(40, 25, "CS61B: THE GAME");
+        StdDraw.setFont(font2);
+        StdDraw.text(40, 20, "New Game (N)");
+        StdDraw.text(40, 15, "Load Game (L)");
+        StdDraw.text(40, 10, "Quit (Q)");
+        StdDraw.show();
+    }
+
+    private void processChar(char c, int mode) {
+        if (c == 'n' || c == 'N') {
+            if (state == States.WELCOME) {
+                if (mode == KEYBOARDMODE) {
+                    Font font = new Font("Sans Serif", Font.PLAIN, 50);
+                    StdDraw.setFont(font);
+                    StdDraw.text(30, 5, "Type seed: ");
+                }
+                seed = 0;
+                state = States.TO_INPUT_SEED;
+            }
+        } else if (Character.isDigit(c)) {
+            if (state == States.TO_INPUT_SEED) {
+                if (mode == KEYBOARDMODE) {
+                    Font font = new Font("Sans Serif", Font.PLAIN, 50);
+                    StdDraw.setFont(font);
+                    StdDraw.text(40 + 3 * seedTextIndention, 5, String.valueOf(c));
+                    seedTextIndention++;
+                }
+                seed = seed * 10 + c - '0';
+            }
+        } else if (c == 's' || c == 'S') {
+            if (state == States.TO_INPUT_SEED) {
+                gameState.rdm = new Random(seed);
+                gameState.world = MapGenerator.generateWorld(gameState.rdm);
+                if (mode == KEYBOARDMODE) {
+                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
+                    StdDraw.setFont(font);
+                    ter.renderFrame(gameState.world);
+                }
+                state = States.GAME;
+            }
+        } else if (c == ':') {
+            if (state == States.GAME) {
+                state = States.TO_QUIT;
+            }
+        } else if (c == 'q' || c == 'Q') {
+            if (state == States.TO_QUIT) {
+                saveWorld();
+                System.exit(0);
+            } else if (state == States.WELCOME) {
+                System.exit(0);
+            }
+        } else if (c == '\b') {
+            if (state == States.TO_INPUT_SEED) {
+                if (mode == KEYBOARDMODE) {
+                    StdDraw.setPenColor(StdDraw.BLACK);
+                    StdDraw.filledSquare(40 + 3 * seedTextIndention - 3, 5, 2);
+                    StdDraw.setPenColor(StdDraw.WHITE);
+                }
+                if (seedTextIndention != 0) {
+                    seedTextIndention--;
+                }
+                seed /= 10;
+            }
+        } else if (c == 'l' || c == 'L') {
+            if (state == States.WELCOME) {
+                gameState = loadWorld();
+                if (mode == KEYBOARDMODE) {
+                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
+                    StdDraw.setFont(font);
+                    ter.renderFrame(gameState.world);
+                }
+            }
         }
     }
 }
