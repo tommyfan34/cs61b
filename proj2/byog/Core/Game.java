@@ -2,7 +2,6 @@ package byog.Core;
 
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
-import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Font;
 import java.io.File;
@@ -14,6 +13,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.StringCharacterIterator;
 import java.util.Random;
+
+import edu.princeton.cs.introcs.StdDraw;
 
 public class Game {
     TERenderer ter = new TERenderer();

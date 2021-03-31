@@ -1,4 +1,8 @@
 *
+*.iml
+**/out/**
+proj2/saved.txt
+proj2/out/production/proj2/saved.txt
 !*/
 !**.java
 !**.txt
