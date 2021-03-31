@@ -3,7 +3,9 @@ package byog.Core;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
+import edu.princeton.cs.introcs.StdDraw;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,6 +14,7 @@ import java.io.ObjectOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.StringCharacterIterator;
+import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
@@ -50,7 +53,80 @@ public class Game {
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
+        drawMenu();
+        boolean inputSeed = false;
+        boolean quitFlag = false;
+        int seedTextIndention = 0;
+        TETile[][] world = null;
+        while (true) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char c = StdDraw.nextKeyTyped();
+                if (c == 'n' || c == 'N') {
+                    Font font = new Font("Arial", Font.PLAIN, 50);
+                    StdDraw.setFont(font);
+                    StdDraw.text(30, 5, "Type seed: ");
+                    inputSeed = true;
+                    quitFlag = false;
+                    seed = 0;
+                } else if (Character.isDigit(c)) {
+                    if (inputSeed) {
+                        seed = seed * 10 + c - '0';
+                        StdDraw.text(40 + 3 * seedTextIndention, 5, String.valueOf(c));
+                        seedTextIndention++;
+                    }
+                    quitFlag = false;
+                } else if (c == 's' || c == 'S') {
+                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
+                    StdDraw.setFont(font);
+                    world = generateWorld();
+                    System.out.println(TETile.toString(world));
+                    ter.renderFrame(world);
+                } else if (c == '\b') {
+                    if (inputSeed) {
+                        seed /= 10;
+                        StdDraw.setPenColor(StdDraw.BLACK);
+                        StdDraw.filledSquare(40 + 3 * seedTextIndention - 3, 5, 2);
+                        StdDraw.setPenColor(StdDraw.WHITE);
+                        if (seedTextIndention != 0) {
+                            seedTextIndention--;
+                        }
+                    }
+                    quitFlag = false;
+                } else if (c == 'q') {
+                    if (quitFlag) {
+                        saveWorld(world);
+                        break;
+                    }
+                    quitFlag = false;
+                    inputSeed = false;
+                } else if (c == ':') {
+                    quitFlag = true;
+                    inputSeed = false;
+                } else if (c == 'l' || c == 'L') {
+                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
+                    StdDraw.setFont(font);
+                    world = loadWorld();
+                    ter.renderFrame(world);
+                }
+                StdDraw.show();
+            }
+        }
     }
+
+    private void drawMenu() {
+        StdDraw.clear(StdDraw.BLACK);
+        StdDraw.setPenColor(StdDraw.WHITE);
+        Font font1 = new Font("Arial", Font.PLAIN, 70);
+        Font font2 = new Font("Arial", Font.PLAIN, 50);
+        StdDraw.setFont(font1);
+        StdDraw.text(40, 25, "CS61B: THE GAME");
+        StdDraw.setFont(font2);
+        StdDraw.text(40, 20, "New Game (N)");
+        StdDraw.text(40, 15, "Load Game (L)");
+        StdDraw.text(40, 10, "Quit (Q)");
+        StdDraw.show();
+    }
+
 
     /**
      * Method used for autograding and testing the game code. The input string will be a series
@@ -79,6 +155,7 @@ public class Game {
                 break;
             } else if (cur.equals('n') || cur.equals('N')) {
                 seedFlag = true;
+                seed = 0;
                 quitFlag = false;
             } else if (Character.isDigit(cur)) {
                 if (seedFlag) {
