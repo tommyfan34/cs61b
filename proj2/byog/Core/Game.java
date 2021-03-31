@@ -14,7 +14,6 @@ import java.io.ObjectOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.StringCharacterIterator;
-import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
@@ -37,7 +36,8 @@ public class Game {
     public static final int SOUTHWEST = 6;
     public static final int SOUTHEAST = 7;
     public static final int MULTICONNECTS = 1;
-    private int seed;
+    private long seed;
+    private Random r;
     private List<Room> rms;
     private List<Hallway> hwys;
 
@@ -57,7 +57,7 @@ public class Game {
         boolean inputSeed = false;
         boolean quitFlag = false;
         int seedTextIndention = 0;
-        TETile[][] world = null;
+        GameState gameState = new GameState();
         while (true) {
             if (StdDraw.hasNextKeyTyped()) {
                 char c = StdDraw.nextKeyTyped();
@@ -78,9 +78,9 @@ public class Game {
                 } else if (c == 's' || c == 'S') {
                     Font font = new Font("Sans Serif", Font.PLAIN, 16);
                     StdDraw.setFont(font);
-                    world = generateWorld();
-                    System.out.println(TETile.toString(world));
-                    ter.renderFrame(world);
+                    gameState.world = generateWorld();
+                    System.out.println(TETile.toString(gameState.world));
+                    ter.renderFrame(gameState.world);
                 } else if (c == '\b') {
                     if (inputSeed) {
                         seed /= 10;
@@ -94,7 +94,7 @@ public class Game {
                     quitFlag = false;
                 } else if (c == 'q') {
                     if (quitFlag) {
-                        saveWorld(world);
+                        saveWorld(gameState);
                         break;
                     }
                     quitFlag = false;
@@ -105,12 +105,13 @@ public class Game {
                 } else if (c == 'l' || c == 'L') {
                     Font font = new Font("Sans Serif", Font.PLAIN, 16);
                     StdDraw.setFont(font);
-                    world = loadWorld();
-                    ter.renderFrame(world);
+                    gameState = loadWorld();
+                    ter.renderFrame(gameState.world);
                 }
                 StdDraw.show();
             }
         }
+        System.exit(0);
     }
 
     private void drawMenu() {
@@ -151,7 +152,7 @@ public class Game {
         while (it.current() != StringCharacterIterator.DONE) {
             cur = it.current();
             if (cur.equals('l') || cur.equals('L')) {
-                finalWorldFrame = loadWorld();
+                finalWorldFrame = loadWorld().world;
                 break;
             } else if (cur.equals('n') || cur.equals('N')) {
                 seedFlag = true;
@@ -168,7 +169,7 @@ public class Game {
                 seedFlag = false;
             } else if (cur.equals('q') || cur.equals('Q')) {
                 if (quitFlag) {
-                    saveWorld(finalWorldFrame);
+                    saveWorld(new GameState(finalWorldFrame, r));
                     break;
                 }
                 quitFlag = false;
@@ -179,13 +180,13 @@ public class Game {
         return finalWorldFrame;
     }
 
-    private static TETile[][] loadWorld() {
-        File f = new File("./game.ser");
+    private static GameState loadWorld() {
+        File f = new File("./game.txt");
         if (f.exists()) {
             try {
                 FileInputStream fs = new FileInputStream(f);
                 ObjectInputStream os = new ObjectInputStream(fs);
-                TETile[][] loadWorld = (TETile[][]) os.readObject();
+                GameState loadWorld = (GameState) os.readObject();
                 os.close();
                 return loadWorld;
             } catch (FileNotFoundException e) {
@@ -199,12 +200,12 @@ public class Game {
                 System.exit(0);
             }
         }
-        TETile[][] retworld = null;
+        GameState retworld = null;
         return retworld;
     }
 
-    private static void saveWorld(TETile[][] t) {
-        File f = new File("./game.ser");
+    private static void saveWorld(GameState t) {
+        File f = new File("./game.txt");
         try {
             if (!f.exists()) {
                 f.createNewFile();
@@ -271,7 +272,7 @@ public class Game {
      */
     private TETile[][] generateWorld() {
         TETile[][] world = new TETile[WIDTH][HEIGHT];
-        Random r = new Random(seed);
+        r = new Random(seed);
         // initialize tiles
         for (int x = 0; x < WIDTH; x += 1) {
             for (int y = 0; y < HEIGHT; y += 1) {
