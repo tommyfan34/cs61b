@@ -5,7 +5,8 @@ import byog.TileEngine.TETile;
 
 import byog.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
-import java.awt.Font;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -43,12 +44,18 @@ public class Game {
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
-        drawMenu();
         while (true) {
             if (StdDraw.hasNextKeyTyped()) {
                 char c = StdDraw.nextKeyTyped();
                 processChar(c, KEYBOARDMODE);
-                StdDraw.show();
+            }
+            if (state == States.GAME) {
+                Font font = new Font("Sans Serif", Font.PLAIN, 16);
+                StdDraw.setFont(font);
+                ter.renderFrame(gameState.world);
+                renderHUD();
+            } else if (state == States.WELCOME) {
+                drawMenu();
             }
         }
     }
@@ -122,7 +129,6 @@ public class Game {
     }
 
     private void drawMenu() {
-        StdDraw.clear(StdDraw.BLACK);
         StdDraw.setPenColor(StdDraw.WHITE);
         Font font1 = new Font("Sans Serif", Font.PLAIN, 70);
         Font font2 = new Font("Sans Serif", Font.PLAIN, 50);
@@ -161,19 +167,9 @@ public class Game {
                 gameState.rdm = new Random(seed);
                 gameState.world = MapGenerator.generateWorld(gameState.rdm);
                 player = getPlayer();
-                if (mode == KEYBOARDMODE) {
-                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
-                    StdDraw.setFont(font);
-                    ter.renderFrame(gameState.world);
-                }
                 state = States.GAME;
             } else if (state == States.GAME) {
                 movePlayer(MapGenerator.SOUTH);
-                if (mode == KEYBOARDMODE) {
-                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
-                    StdDraw.setFont(font);
-                    ter.renderFrame(gameState.world);
-                }
             }
         } else if (c == ':') {
             if (state == States.GAME) {
@@ -202,39 +198,19 @@ public class Game {
             if (state == States.WELCOME) {
                 gameState = loadWorld();
                 player = getPlayer();
-                if (mode == KEYBOARDMODE) {
-                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
-                    StdDraw.setFont(font);
-                    ter.renderFrame(gameState.world);
-                }
                 state = States.GAME;
             }
         } else if (c == 'w' || c == 'W') {
             if (state == States.GAME) {
                 movePlayer(MapGenerator.NORTH);
-                if (mode == KEYBOARDMODE) {
-                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
-                    StdDraw.setFont(font);
-                    ter.renderFrame(gameState.world);
-                }
             }
         } else if (c == 'a' || c == 'A') {
             if (state == States.GAME) {
                 movePlayer(MapGenerator.WEST);
-                if (mode == KEYBOARDMODE) {
-                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
-                    StdDraw.setFont(font);
-                    ter.renderFrame(gameState.world);
-                }
             }
         } else if (c == 'd' || c == 'D') {
             if (state == States.GAME) {
                 movePlayer(MapGenerator.EAST);
-                if (mode == KEYBOARDMODE) {
-                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
-                    StdDraw.setFont(font);
-                    ter.renderFrame(gameState.world);
-                }
             }
         }
     }
@@ -257,5 +233,15 @@ public class Game {
             player = newCor;
             gameState.world[newCor.x][newCor.y] = Tileset.PLAYER;
         }
+    }
+
+    private void renderHUD() {
+        int mouseX = (int) StdDraw.mouseX();
+        int mouseY = (int) StdDraw.mouseY();
+        String desc = gameState.world[mouseX][mouseY].description();
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.textLeft(2, MapGenerator.HEIGHT - 1, desc);
+        StdDraw.show();
+        StdDraw.pause(10);
     }
 }
