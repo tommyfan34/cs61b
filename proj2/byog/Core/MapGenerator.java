@@ -23,7 +23,7 @@ public class MapGenerator {
     public static final int SOUTHEAST = 7;
     public static final int MULTICONNECTS = 1;
 
-    private static class Coordinate {
+    protected static class Coordinate {
         int x;
         int y;
         Coordinate(int a, int b) {
@@ -96,7 +96,7 @@ public class MapGenerator {
         findConnects(world);
         connectRegions(world, r);
         removeDeadEnds(world);
-        addDoor(world, r);
+        addDoorAndCharacter(world, r);
         return world.map;
     }
 
@@ -232,7 +232,7 @@ public class MapGenerator {
     }
 
     /** Apply direction and distance to coordinate and returns coordinate */
-    private static Coordinate applyDir(int dir, int distance, Coordinate cor) {
+    protected static Coordinate applyDir(int dir, int distance, Coordinate cor) {
         switch (dir) {
             case NORTH:
                 return new Coordinate(cor.x, cor.y + distance);
@@ -414,8 +414,9 @@ public class MapGenerator {
      * @param world
      * @param r
      */
-    private static void addDoor(World world, Random r) {
+    private static void addDoorAndCharacter(World world, Random r) {
         List<Coordinate> walls = new ArrayList<>();
+        List<Coordinate> floors = new ArrayList<>();
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
                 if (world.map[x][y].equals(Tileset.WALL)) {
@@ -436,11 +437,16 @@ public class MapGenerator {
                     if (hasFloor && hasNothing) {
                         walls.add(new Coordinate(x, y));
                     }
+                } else if (world.map[x][y].equals(Tileset.FLOOR)) {
+                    floors.add(new Coordinate(x, y));
                 }
             }
         }
         int index = RandomUtils.uniform(r, walls.size());
         Coordinate cor = walls.get(index);
         world.map[cor.x][cor.y] = Tileset.LOCKED_DOOR;
+        index = RandomUtils.uniform(r, floors.size());
+        cor = floors.get(index);
+        world.map[cor.x][cor.y] = Tileset.PLAYER;
     }
 }

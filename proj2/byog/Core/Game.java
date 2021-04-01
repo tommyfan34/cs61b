@@ -3,6 +3,7 @@ package byog.Core;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 
+import byog.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 import java.awt.Font;
 import java.io.File;
@@ -28,12 +29,14 @@ public class Game {
     private static final int STRINGMODE = 0;
     private static final int KEYBOARDMODE = 1;
     private GameState gameState;
+    private MapGenerator.Coordinate player;
 
 
     public Game() {
         ter.initialize(byog.Core.MapGenerator.WIDTH, byog.Core.MapGenerator.HEIGHT);
         state = States.WELCOME;
         gameState = new GameState();
+        StdDraw.enableDoubleBuffering();
     }
 
     /**
@@ -157,12 +160,20 @@ public class Game {
             if (state == States.TO_INPUT_SEED) {
                 gameState.rdm = new Random(seed);
                 gameState.world = MapGenerator.generateWorld(gameState.rdm);
+                player = getPlayer();
                 if (mode == KEYBOARDMODE) {
                     Font font = new Font("Sans Serif", Font.PLAIN, 16);
                     StdDraw.setFont(font);
                     ter.renderFrame(gameState.world);
                 }
                 state = States.GAME;
+            } else if (state == States.GAME) {
+                movePlayer(MapGenerator.SOUTH);
+                if (mode == KEYBOARDMODE) {
+                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
+                    StdDraw.setFont(font);
+                    ter.renderFrame(gameState.world);
+                }
             }
         } else if (c == ':') {
             if (state == States.GAME) {
@@ -190,12 +201,61 @@ public class Game {
         } else if (c == 'l' || c == 'L') {
             if (state == States.WELCOME) {
                 gameState = loadWorld();
+                player = getPlayer();
+                if (mode == KEYBOARDMODE) {
+                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
+                    StdDraw.setFont(font);
+                    ter.renderFrame(gameState.world);
+                }
+                state = States.GAME;
+            }
+        } else if (c == 'w' || c == 'W') {
+            if (state == States.GAME) {
+                movePlayer(MapGenerator.NORTH);
                 if (mode == KEYBOARDMODE) {
                     Font font = new Font("Sans Serif", Font.PLAIN, 16);
                     StdDraw.setFont(font);
                     ter.renderFrame(gameState.world);
                 }
             }
+        } else if (c == 'a' || c == 'A') {
+            if (state == States.GAME) {
+                movePlayer(MapGenerator.WEST);
+                if (mode == KEYBOARDMODE) {
+                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
+                    StdDraw.setFont(font);
+                    ter.renderFrame(gameState.world);
+                }
+            }
+        } else if (c == 'd' || c == 'D') {
+            if (state == States.GAME) {
+                movePlayer(MapGenerator.EAST);
+                if (mode == KEYBOARDMODE) {
+                    Font font = new Font("Sans Serif", Font.PLAIN, 16);
+                    StdDraw.setFont(font);
+                    ter.renderFrame(gameState.world);
+                }
+            }
+        }
+    }
+
+    private MapGenerator.Coordinate getPlayer() {
+        for (int x = 0; x < MapGenerator.WIDTH; x++) {
+            for (int y = 0; y < MapGenerator.HEIGHT; y++) {
+                if (gameState.world[x][y].equals(Tileset.PLAYER)) {
+                    return new MapGenerator.Coordinate(x, y);
+                }
+            }
+        }
+        return null;
+    }
+
+    private void movePlayer(int direction) {
+        MapGenerator.Coordinate newCor = MapGenerator.applyDir(direction, 1, player);
+        if (gameState.world[newCor.x][newCor.y].equals(Tileset.FLOOR)) {
+            gameState.world[player.x][player.y] = Tileset.FLOOR;
+            player = newCor;
+            gameState.world[newCor.x][newCor.y] = Tileset.PLAYER;
         }
     }
 }
