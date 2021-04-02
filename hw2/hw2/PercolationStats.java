@@ -6,7 +6,7 @@ import edu.princeton.cs.introcs.StdStats;
 
 public class PercolationStats {
     private double[] percThresholds;
-    int T;
+    private int T;
 
     // perform T independent experiments on an N-by-N grid
     public PercolationStats(int N, int T, PercolationFactory pf) {
@@ -24,12 +24,12 @@ public class PercolationStats {
                 if (perc.isOpen(row, col)) {
                     perc.open(row, col);
                     n++;
-                }
-                if (perc.percolates()) {
-                    break;
+                    if (perc.percolates()) {
+                        break;
+                    }
                 }
             }
-            percThresholds[i] = n;
+            percThresholds[i] = n / (N * N);
         }
     }
 

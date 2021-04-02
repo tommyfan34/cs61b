@@ -14,7 +14,9 @@ public class Percolation {
             throw new IllegalArgumentException();
         }
         this.N = N;
-        fullSet = new WeightedQuickUnionUF(N * N + 1);  // the last one is the always full sentinel
+        // the second last one is the always full sentinel
+        // the last one is the sentinel connect to all nodes at bottom row
+        fullSet = new WeightedQuickUnionUF(N * N + 2);
         openSet = new boolean[N * N];
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -28,13 +30,17 @@ public class Percolation {
         if (row < 0 || col < 0 || row >= N || col >= N) {
             throw new IndexOutOfBoundsException();
         }
-        openSet[corToIndex(row, col)] = true;
-        openNum++;
-        // open the top row
-        if (row == 0) {
-            fullSet.union(corToIndex(row, col), N * N);
+        if (!isOpen(row, col)) {
+            openSet[corToIndex(row, col)] = true;
+            openNum++;
+            // open the top row
+            if (row == 0) {
+                fullSet.union(corToIndex(row, col), N * N);
+            } else if (row == N - 1) {
+                fullSet.union(corToIndex(row, col), N * N + 1);
+            }
+            joinAround(row, col);
         }
-        joinAround(row, col);
     }
 
     // is the site (row, col) open?
@@ -60,17 +66,11 @@ public class Percolation {
 
     // does the system percolate?
     public boolean percolates() {
-        for (int i = 0; i < N; i++) {
-            if (isFull(N - 1, i)) {
-                return true;
-            }
-        }
-        return false;
+        return fullSet.connected(N * N, N * N + 1);
     }
 
     // use for unit testing (not required)
     public static void main(String[] agrs) {
-
     }
 
     private int corToIndex(int row, int col) {
