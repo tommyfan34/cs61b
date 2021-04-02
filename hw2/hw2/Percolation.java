@@ -42,7 +42,7 @@ public class Percolation {
                 percolateSet.union(corToIndex(row, col), N * N);
             }
             if (row == N - 1) {
-                percolateSet.union(corToIndex(row, col), N * N);
+                percolateSet.union(corToIndex(row, col), N * N + 1);
             }
             joinAround(row, col);
         }
