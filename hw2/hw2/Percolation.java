@@ -5,6 +5,7 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 public class Percolation {
     private int N;
     private WeightedQuickUnionUF fullSet;
+    private WeightedQuickUnionUF percolateSet;
     private boolean[] openSet;
     private int openNum = 0;
 
@@ -16,7 +17,9 @@ public class Percolation {
         this.N = N;
         // the second last one is the always full sentinel
         // the last one is the sentinel connect to all nodes at bottom row
-        fullSet = new WeightedQuickUnionUF(N * N + 2);
+        fullSet = new WeightedQuickUnionUF(N * N + 1);
+        // to prevent backwash problem
+        percolateSet = new WeightedQuickUnionUF(N * N + 2);
         openSet = new boolean[N * N];
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -36,8 +39,10 @@ public class Percolation {
             // open the top row
             if (row == 0) {
                 fullSet.union(corToIndex(row, col), N * N);
-            } else if (row == N - 1) {
-                fullSet.union(corToIndex(row, col), N * N + 1);
+                percolateSet.union(corToIndex(row, col), N * N);
+            }
+            if (row == N - 1) {
+                percolateSet.union(corToIndex(row, col), N * N);
             }
             joinAround(row, col);
         }
@@ -66,7 +71,7 @@ public class Percolation {
 
     // does the system percolate?
     public boolean percolates() {
-        return fullSet.connected(N * N, N * N + 1);
+        return percolateSet.connected(N * N, N * N + 1);
     }
 
     // use for unit testing (not required)
@@ -80,15 +85,19 @@ public class Percolation {
     private void joinAround(int row, int col) {
         if (row - 1 >= 0 && isOpen(row - 1, col)) {
             fullSet.union(corToIndex(row, col), corToIndex(row - 1, col));
+            percolateSet.union(corToIndex(row, col), corToIndex(row - 1, col));
         }
         if (row + 1 < N && isOpen(row + 1, col)) {
             fullSet.union(corToIndex(row, col), corToIndex(row + 1, col));
+            percolateSet.union(corToIndex(row, col), corToIndex(row + 1, col));
         }
         if (col - 1 >= 0 && isOpen(row, col - 1)) {
             fullSet.union(corToIndex(row, col), corToIndex(row, col - 1));
+            percolateSet.union(corToIndex(row, col), corToIndex(row, col - 1));
         }
         if (col + 1 < N && isOpen(row, col + 1)) {
             fullSet.union(corToIndex(row, col), corToIndex(row, col + 1));
+            percolateSet.union(corToIndex(row, col), corToIndex(row, col + 1));
         }
     }
 }
