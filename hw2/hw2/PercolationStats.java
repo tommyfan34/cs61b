@@ -21,7 +21,7 @@ public class PercolationStats {
             while (true) {
                 int row = StdRandom.uniform(N);
                 int col = StdRandom.uniform(N);
-                if (perc.isOpen(row, col)) {
+                if (!perc.isOpen(row, col)) {
                     perc.open(row, col);
                     n++;
                     if (perc.percolates()) {
@@ -29,7 +29,7 @@ public class PercolationStats {
                     }
                 }
             }
-            percThresholds[i] = n / (N * N);
+            percThresholds[i] = (double) n / (N * N);
         }
     }
 
