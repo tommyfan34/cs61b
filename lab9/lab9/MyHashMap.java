@@ -71,28 +71,32 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         }
         buckets[hash(key)].put(key, value);
         if (loadFactor() > MAX_LF) {
-            ArrayMap<K, V>[] bucketsNew = new ArrayMap[buckets.length * 2];
-            ArrayMap<K, V>[] temp = new ArrayMap[buckets.length];
-            for (int i = 0; i < bucketsNew.length; i++) {
-                bucketsNew[i] = new ArrayMap<>();
+            resize(buckets.length * 2);
+        }
+    }
+
+    private void resize(int capacity) {
+        ArrayMap<K, V>[] bucketsNew = new ArrayMap[capacity];
+        ArrayMap<K, V>[] temp = new ArrayMap[buckets.length];
+        for (int i = 0; i < bucketsNew.length; i++) {
+            bucketsNew[i] = new ArrayMap<>();
+        }
+        for (int i = 0; i < temp.length; i++) {
+            temp[i] = new ArrayMap<>();
+        }
+        for (int i = 0; i < buckets.length; i++) {
+            Set<K> keys = buckets[i].keySet();
+            for (K k : keys) {
+                V v = buckets[i].get(k);
+                temp[hash(k)].put(k, v);
             }
-            for (int i = 0; i < temp.length; i++) {
-                temp[i] = new ArrayMap<>();
-            }
-            for (int i = 0; i < buckets.length; i++) {
-                Set<K> keys = buckets[i].keySet();
-                for (K k : keys) {
-                    V v = buckets[i].get(k);
-                    temp[hash(k)].put(k, v);
-                }
-            }
-            buckets = bucketsNew;
-            for (int i = 0; i < temp.length; i++) {
-                Set<K> keys = temp[i].keySet();
-                for (K k : keys) {
-                    V v = temp[i].get(k);
-                    bucketsNew[hash(k)].put(k, v);
-                }
+        }
+        buckets = bucketsNew;
+        for (int i = 0; i < temp.length; i++) {
+            Set<K> keys = temp[i].keySet();
+            for (K k : keys) {
+                V v = temp[i].get(k);
+                bucketsNew[hash(k)].put(k, v);
             }
         }
     }
@@ -129,7 +133,8 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         if (ret == null) {
             return null;
         }
-        buckets[key.hashCode()].remove(key);
+        buckets[hash(key)].remove(key);
+        size--;
         return ret;
     }
 
@@ -145,7 +150,8 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         if (ret == null || !ret.equals(value)) {
             return null;
         }
-        buckets[key.hashCode()].remove(key);
+        buckets[hash(key)].remove(key);
+        size--;
         return ret;
     }
 
