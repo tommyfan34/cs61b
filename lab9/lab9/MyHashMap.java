@@ -71,10 +71,10 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         }
         buckets[hash(key)].put(key, value);
         if (loadFactor() > MAX_LF) {
-            ArrayMap<K, V>[] buckets_new = new ArrayMap[buckets.length * 2];
+            ArrayMap<K, V>[] bucketsNew = new ArrayMap[buckets.length * 2];
             ArrayMap<K, V>[] temp = new ArrayMap[buckets.length];
-            for (int i = 0; i < buckets_new.length; i++) {
-                buckets_new[i] = new ArrayMap<>();
+            for (int i = 0; i < bucketsNew.length; i++) {
+                bucketsNew[i] = new ArrayMap<>();
             }
             for (int i = 0; i < temp.length; i++) {
                 temp[i] = new ArrayMap<>();
@@ -86,12 +86,12 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
                     temp[hash(k)].put(k, v);
                 }
             }
-            buckets = buckets_new;
+            buckets = bucketsNew;
             for (int i = 0; i < temp.length; i++) {
                 Set<K> keys = temp[i].keySet();
                 for (K k : keys) {
                     V v = temp[i].get(k);
-                    buckets_new[hash(k)].put(k, v);
+                    bucketsNew[hash(k)].put(k, v);
                 }
             }
         }
