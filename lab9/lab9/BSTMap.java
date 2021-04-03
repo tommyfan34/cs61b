@@ -1,5 +1,6 @@
 package lab9;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -106,10 +107,21 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
 
     //////////////// EVERYTHING BELOW THIS LINE IS OPTIONAL ////////////////
 
+    private void keySet(Node n, Set<K> s) {
+        if (n == null) {
+            return;
+        }
+        s.add(n.key);
+        keySet(n.left, s);
+        keySet(n.right, s);
+    }
+
     /* Returns a Set view of the keys contained in this map. */
     @Override
     public Set<K> keySet() {
-        throw new UnsupportedOperationException();
+        Set<K> ret = new HashSet<>();
+        keySet(root, ret);
+        return ret;
     }
 
     /** Removes KEY from the tree if present
@@ -118,7 +130,56 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
      */
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        V ret = get(key);
+        if (ret == null) {
+            return null;
+        }
+        root = remove(key, root);
+        size -= 1;
+        return ret;
+    }
+
+    private Node remove(K key, Node n) {
+        if (n == null) {
+            return null;
+        }
+        int cmp = key.compareTo(n.key);
+        if (cmp < 0) {
+            n.left = remove(key, n.left);
+        } else if (cmp > 0) {
+            n.right = remove(key, n.right);
+        } else {
+            if (n.right == null) {
+                return n.left;
+            }
+            if (n.left == null) {
+                return n.right;
+            }
+            Node t = n;
+            n = max(n.left);
+            n.left = deleteMax(t.left);
+            n.right = t.right;
+        }
+        return n;
+    }
+
+    private Node max(Node n) {
+        if (n.right == null) {
+            return n;
+        }
+        return max(n.right);
+    }
+
+    private Node deleteMax(Node n) {
+        if (n == null) {
+            return null;
+        }
+        if (n.right != null) {
+            n.right = deleteMax(n.right);
+        } else {
+            return n.left;
+        }
+        return n;
     }
 
     /** Removes the key-value entry for the specified key only if it is
@@ -127,11 +188,29 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
      **/
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        V ret = get(key);
+        if (ret == null || value == null || !value.equals(ret)) {
+            return null;
+        }
+        root = remove(key, root);
+        size -= 1;
+        return ret;
     }
 
     @Override
     public Iterator<K> iterator() {
         throw new UnsupportedOperationException();
+    }
+
+    public static void main(String[] args) {
+        BSTMap<Character, Integer> bstmap = new BSTMap<>();
+        bstmap.put('D', 0);
+        bstmap.put('B', 0);
+        bstmap.put('F', 0);
+        bstmap.put('A', 0);
+        bstmap.put('C', 0);
+        bstmap.put('E', 0);
+        bstmap.put('G', 0);
+        bstmap.remove('D', 1);
     }
 }
