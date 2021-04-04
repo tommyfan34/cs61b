@@ -101,12 +101,12 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      * Bubbles up the node currently at the given index.
      */
     private void swim(int index) {
-        // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
-        validateSinkSwimArg(index);
-
         if (index == 1) {
             return;
         }
+        // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
+        validateSinkSwimArg(index);
+
 
         if (min(index, parentIndex(index)) == index) {
             swap(index, parentIndex(index));
@@ -119,12 +119,12 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      * Bubbles down the node currently at the given index.
      */
     private void sink(int index) {
-        // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
-        validateSinkSwimArg(index);
-
         if (leftIndex(index) > size) {
             return;
         }
+        // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
+        validateSinkSwimArg(index);
+
         int minChild = min(leftIndex(index), rightIndex(index));
         if (min(index, minChild) == minChild) {
             swap(index, minChild);
@@ -208,10 +208,14 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         }
         if (priority < contents[index].myPriority) {
             contents[index].myPriority = priority;
-            swim(index);
+            if (!(index == 1)) {
+                swim(index);
+            }
         } else if (priority > contents[index].myPriority) {
             contents[index].myPriority = priority;
-            sink(index);
+            if (leftIndex(index) <= size) {
+                sink(index);
+            }
         }
     }
 
