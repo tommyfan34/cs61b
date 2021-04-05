@@ -60,7 +60,7 @@ public class Solver {
     }
 
     /** Search node class to the solver */
-    private class SearchNode implements Comparable<SearchNode> {
+    private class SearchNode {
         // current world state
         WorldState ws;
         // the number of moves made to reach
@@ -73,12 +73,6 @@ public class Solver {
             this.ws = ws;
             this.initialToThis = initialToThis;
             this.prev = prev;
-        }
-
-        @Override
-        public int compareTo(SearchNode other) {
-            return ws.estimatedDistanceToGoal() + initialToThis -
-                    other.ws.estimatedDistanceToGoal() - other.initialToThis;
         }
     }
 
