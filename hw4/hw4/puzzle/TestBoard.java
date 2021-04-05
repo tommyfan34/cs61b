@@ -24,4 +24,15 @@ public class TestBoard {
         x[1][1] = 1000;
         assertEquals("Your Board class is mutable and you should be making a copy of the values in the passed tiles array. Please see the FAQ!", 3, b.tileAt(1, 1));
     }
+
+    @Test
+    public void TestHamming() {
+        int[][] x = new int[2][2];
+        x[0][0] = 1;
+        x[0][1] = 2;
+        x[1][0] = 3;
+        x[1][1] = 0;
+        Board b = new Board(x);
+        assertEquals(0, b.hamming());
+    }
 }

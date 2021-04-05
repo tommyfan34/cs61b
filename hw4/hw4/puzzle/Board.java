@@ -159,11 +159,20 @@ public class Board implements WorldState {
         return false;
     }
 
+    public int hashCode() {
+        int ret = 0;
+        for (int i = 0; i < size(); i++) {
+            for (int j = 0; j < size(); i++) {
+                ret = ret * 255 + tileAt(i, j);
+            }
+        }
+        return ret;
+    }
+
     /** Returns the string representation of the board. 
       * Uncomment this method. */
     public String toString() {
         StringBuilder s = new StringBuilder();
-        int N = size();
         s.append(N + "\n");
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
@@ -180,7 +189,7 @@ public class Board implements WorldState {
         int num = 1;
         for (int i = 0; i < size(); i++) {
             for (int j = 0; j < size(); j++) {
-                if (i != size() - 1 && j != size() - 1) {
+                if (i != size() - 1 || j != size() - 1) {
                     goal[i][j] = num;
                     num++;
                 } else {
