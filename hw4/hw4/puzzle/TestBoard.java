@@ -29,10 +29,10 @@ public class TestBoard {
     public void TestHamming() {
         int[][] x = new int[2][2];
         x[0][0] = 0;
-        x[0][1] = 3;
-        x[1][0] = 2;
-        x[1][1] = 1;
+        x[0][1] = 1;
+        x[1][0] = 3;
+        x[1][1] = 2;
         Board b = new Board(x);
-        assertEquals(3, b.hamming());
+        assertEquals(2, b.manhattan());
     }
 }
