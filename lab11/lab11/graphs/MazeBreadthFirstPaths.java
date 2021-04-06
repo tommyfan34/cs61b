@@ -31,21 +31,21 @@ public class MazeBreadthFirstPaths extends MazeExplorer {
 
     /** Conducts a breadth first search of the maze starting at the source. */
     private void bfs() {
-       int v = s;
-       fringe.add(v);
-       while (v != t && !fringe.isEmpty()) {
-           v = fringe.remove();
-           marked[v] = true;
-           announce();
-           for (int w : maze.adj(v)) {
-               if (marked[w] == false) {
-                   edgeTo[w] = v;
-                   announce();
-                   distTo[w] = distTo[v] + 1;
-                   fringe.add(w);
-               }
-           }
-       }
+        int v = s;
+        fringe.add(v);
+        while (v != t && !fringe.isEmpty()) {
+            v = fringe.remove();
+            marked[v] = true;
+            announce();
+            for (int w : maze.adj(v)) {
+                if (!marked[w]) {
+                    edgeTo[w] = v;
+                    announce();
+                    distTo[w] = distTo[v] + 1;
+                    fringe.add(w);
+                }
+            }
+        }
     }
 
 
