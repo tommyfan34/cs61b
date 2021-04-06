@@ -50,7 +50,7 @@ public class MazeAStarPath extends MazeExplorer {
     }
 
     /** Performs an A star search from vertex s. */
-    private void astar(int s) {
+    private void astar() {
         int v = s;
         fringe.add(v);
         while (!fringe.isEmpty()) {
@@ -77,7 +77,7 @@ public class MazeAStarPath extends MazeExplorer {
 
     @Override
     public void solve() {
-        astar(s);
+        astar();
     }
 
 }
