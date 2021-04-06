@@ -36,6 +36,7 @@ public class MazeBreadthFirstPaths extends MazeExplorer {
        while (v != t && !fringe.isEmpty()) {
            v = fringe.remove();
            marked[v] = true;
+           announce();
            for (int w : maze.adj(v)) {
                if (marked[w] == false) {
                    edgeTo[w] = v;
