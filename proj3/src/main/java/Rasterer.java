@@ -64,15 +64,32 @@ public class Rasterer {
         w = params.get("w");
         h = params.get("h");
         // check the query validity
-        boolean valid = (MapServer.ROOT_ULLON <= ullon
-                && ullon <= lrlon
-                && lrlon <= MapServer.ROOT_LRLON)
-                && (MapServer.ROOT_ULLAT >= ullat
-                && ullat >= lrlat
-                && lrlat >= MapServer.ROOT_LRLAT);
+        boolean valid = ullon <= lrlon && ullat >= lrlat;
+        if (lrlon < MapServer.ROOT_ULLON || ullon > MapServer.ROOT_LRLON
+        || lrlat > MapServer.ROOT_ULLAT || ullat < MapServer.ROOT_LRLAT) {
+            valid = false;
+        }
         if (!valid) {
-            results.put("query_succuss", false);
+            results.put("query_success", false);
+            results.put("depth", -1);
+            results.put("render_grid", null);
+            results.put("raster_ul_lon", -1);
+            results.put("raster_ul_lat", -1);
+            results.put("raster_lr_lon", -1);
+            results.put("raster_lr_lat", -1);
             return results;
+        }
+        if (ullon < MapServer.ROOT_ULLON) {
+            ullon = MapServer.ROOT_ULLON;
+        }
+        if (ullat > MapServer.ROOT_ULLAT) {
+            ullat = MapServer.ROOT_ULLAT;
+        }
+        if (lrlon > MapServer.ROOT_LRLON) {
+            lrlon = MapServer.ROOT_LRLON;
+        }
+        if (lrlat < MapServer.ROOT_LRLAT) {
+            lrlat = MapServer.ROOT_LRLAT;
         }
         getDepth();
         results.put("depth", depth);
@@ -108,7 +125,13 @@ public class Rasterer {
         int uly = (int) Math.floor((MapServer.ROOT_ULLAT - ullat) / latDPP);
         int lrx = (int) Math.floor((lrlon - MapServer.ROOT_ULLON) / lonDPP);
         int lry = (int) Math.floor((MapServer.ROOT_ULLAT - lrlat) / latDPP);
-        renderGrid = new String[lrx - ulx + 1][lry - uly + 1];
+        if (lrx == (int) Math.pow(2, depth)) {
+            lrx -= 1;
+        }
+        if (lry == (int) Math.pow(2, depth)) {
+            lry -= 1;
+        }
+        renderGrid = new String[lry - uly + 1][lrx - ulx + 1];
         for (int x = ulx; x <= lrx; x++) {
             for (int y = uly; y <= lry; y++) {
                 String s = "d" + depth + "_x" + x + "_y" + y + ".png";
