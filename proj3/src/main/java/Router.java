@@ -1,5 +1,4 @@
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +24,61 @@ public class Router {
      */
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
-        return null; // FIXME
+        List<Long> ret = new ArrayList<>();
+        long sid = g.closest(stlon, stlat);
+        GraphDB.Node s = g.nodes.get(sid);
+        long tid = g.closest(destlon, destlat);
+        GraphDB.Node t = g.nodes.get(tid);
+        GraphDB.Node n = s;
+        for (Long l : g.vertices()) {
+            g.nodes.get(l).distToSrc = Double.MAX_VALUE;
+            g.nodes.get(l).marked = false;
+            g.nodes.get(l).edgeTo = -1;
+        }
+        s.distToSrc = 0;
+
+        Comparator<GraphDB.Node> cmp = new Comparator<GraphDB.Node>() {
+            @Override
+            public int compare(GraphDB.Node o1, GraphDB.Node o2) {
+                double h1 = g.distance(o1.lon, o1.lat, t.lon, t.lat);
+                double h2 = g.distance(o2.lon, o2.lat, t.lon, t.lat);
+                double res = h1 + o1.distToSrc - h2 - o2.distToSrc;
+                if (res < 0) {
+                    return -1;
+                } else if (res > 0) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        };
+        PriorityQueue<GraphDB.Node> fringe = new PriorityQueue<>(cmp);
+
+        fringe.add(n);
+        while (!fringe.isEmpty()) {
+            n = fringe.remove();
+            n.marked = true;
+            if (n.ref == t.ref) {
+                break;
+            }
+            for (Long l : g.adjacent(n.ref)) {
+                if (!g.nodes.get(l).marked) {
+                    if (n.distToSrc + g.distance(n.ref, l) < g.nodes.get(l).distToSrc) {
+                        g.nodes.get(l).distToSrc = n.distToSrc + g.distance(n.ref, l);
+                        g.nodes.get(l).edgeTo = n.ref;
+                    }
+                    fringe.add(g.nodes.get(l));
+                }
+            }
+        }
+        long pt = tid;
+        while (pt != sid) {
+            ret.add(pt);
+            pt = g.nodes.get(pt).edgeTo;
+        }
+        ret.add(pt);
+        Collections.reverse(ret);
+        return ret;
     }
 
     /**

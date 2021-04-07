@@ -62,7 +62,6 @@ public class GraphDB {
      *  we can reasonably assume this since typically roads are connected.
      */
     private void clean() {
-        // TODO: Your code here.
         Set<Long> ids = nodes.keySet();
         Set<Long> temp = new HashSet<>();
         for (Long l : ids) {
@@ -195,6 +194,9 @@ public class GraphDB {
         ArrayList<Node> connectedNodes;
         boolean isLocation;
         String locName;
+        double distToSrc;
+        long edgeTo;
+        boolean marked;
 
         public Node (long ref, double lon, double lat) {
             this.lon = lon;
