@@ -7,6 +7,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 public class GraphDB {
     /** Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Node, Edge, etc. */
+    HashMap<String, Node> nodes;
 
     /**
      * Example constructor shows how to create and start an XML parser.
@@ -28,6 +31,7 @@ public class GraphDB {
      */
     public GraphDB(String dbPath) {
         try {
+            nodes = new HashMap<>();
             File inputFile = new File(dbPath);
             FileInputStream inputStream = new FileInputStream(inputFile);
             // GZIPInputStream stream = new GZIPInputStream(inputStream);
@@ -58,6 +62,12 @@ public class GraphDB {
      */
     private void clean() {
         // TODO: Your code here.
+        Set<String> ids = nodes.keySet();
+        for (String s : ids) {
+            if (nodes.get(s).connectedNodes.isEmpty()) {
+                nodes.remove(s);
+            }
+        }
     }
 
     /**
@@ -156,4 +166,28 @@ public class GraphDB {
     double lat(long v) {
         return 0;
     }
+
+    static class Node {
+        double lon;
+        double lat;
+        String ref;
+        ArrayList<Node> connectedNodes;
+        boolean isLocation;
+        String locName;
+
+        public Node (String ref, double lon, double lat) {
+            this.lon = lon;
+            this.lat = lat;
+            this.ref = ref;
+            isLocation = false;
+            connectedNodes = new ArrayList<>();
+        }
+
+        public Node (String ref) {
+            this.ref = ref;
+            isLocation = false;
+            connectedNodes = new ArrayList<>();
+        }
+    }
+
 }

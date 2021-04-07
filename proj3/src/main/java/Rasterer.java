@@ -66,7 +66,7 @@ public class Rasterer {
         // check the query validity
         boolean valid = ullon <= lrlon && ullat >= lrlat;
         if (lrlon < MapServer.ROOT_ULLON || ullon > MapServer.ROOT_LRLON
-        || lrlat > MapServer.ROOT_ULLAT || ullat < MapServer.ROOT_LRLAT) {
+                || lrlat > MapServer.ROOT_ULLAT || ullat < MapServer.ROOT_LRLAT) {
             valid = false;
         }
         if (!valid) {

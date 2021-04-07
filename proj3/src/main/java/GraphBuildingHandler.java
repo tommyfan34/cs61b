@@ -2,6 +2,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,6 +39,10 @@ public class GraphBuildingHandler extends DefaultHandler {
                     "secondary_link", "tertiary_link"));
     private String activeState = "";
     private final GraphDB g;
+    private ArrayList<String> tempWayNodes;
+    private boolean wayValid;
+    private String currentWayRef;
+    private String currentNodeRef;
 
     /**
      * Create a new GraphBuildingHandler.
@@ -74,10 +79,18 @@ public class GraphBuildingHandler extends DefaultHandler {
 
             /* TODO Use the above information to save a "node" to somewhere. */
             /* Hint: A graph-like structure would be nice. */
-
+            String id = attributes.getValue("id");
+            double lon = Double.valueOf(attributes.getValue("lon"));
+            double lat = Double.valueOf(attributes.getValue("lat"));
+            currentNodeRef = id;
+            g.nodes.put(id, new GraphDB.Node(id, lon, lat));
         } else if (qName.equals("way")) {
             /* We encountered a new <way...> tag. */
             activeState = "way";
+            wayValid = true;
+            tempWayNodes = new ArrayList<>();
+            currentWayRef = attributes.getValue("id");
+
 //            System.out.println("Beginning a way...");
         } else if (activeState.equals("way") && qName.equals("nd")) {
             /* While looking at a way, we found a <nd...> tag. */
@@ -89,6 +102,8 @@ public class GraphBuildingHandler extends DefaultHandler {
             cumbersome since you might have to remove the connections if you later see a tag that
             makes this way invalid. Instead, think of keeping a list of possible connections and
             remember whether this way is valid or not. */
+            String ref = attributes.getValue("ref");
+            tempWayNodes.add(ref);
 
         } else if (activeState.equals("way") && qName.equals("tag")) {
             /* While looking at a way, we found a <tag...> tag. */
@@ -101,6 +116,9 @@ public class GraphBuildingHandler extends DefaultHandler {
                 //System.out.println("Highway type: " + v);
                 /* TODO Figure out whether this way and its connections are valid. */
                 /* Hint: Setting a "flag" is good enough! */
+                if (!ALLOWED_HIGHWAY_TYPES.contains(v)) {
+                    wayValid = false;
+                }
             } else if (k.equals("name")) {
                 //System.out.println("Way Name: " + v);
             }
@@ -113,6 +131,8 @@ public class GraphBuildingHandler extends DefaultHandler {
             node this tag belongs to. Remember XML is parsed top-to-bottom, so probably it's the
             last node that you looked at (check the first if-case). */
 //            System.out.println("Node's name: " + attributes.getValue("v"));
+            g.nodes.get(currentNodeRef).isLocation = true;
+            g.nodes.get(currentNodeRef).locName = attributes.getValue("v");
         }
     }
 
@@ -134,6 +154,27 @@ public class GraphBuildingHandler extends DefaultHandler {
             /* Hint1: If you have stored the possible connections for this way, here's your
             chance to actually connect the nodes together if the way is valid. */
 //            System.out.println("Finishing a way...");
+            if (wayValid) {
+                for (int i = 0; i < tempWayNodes.size(); i++) {
+                    String s = tempWayNodes.get(i);
+                    if (i == 0) {
+                        String next = tempWayNodes.get(i + 1);
+                        GraphDB.Node n = g.nodes.get(next);
+                        g.nodes.get(s).connectedNodes.add(n);
+                    } else if (i == tempWayNodes.size() - 1) {
+                        String prev = tempWayNodes.get(i - 1);
+                        GraphDB.Node n = g.nodes.get(prev);
+                        g.nodes.get(s).connectedNodes.add(n);
+                    } else {
+                        String next = tempWayNodes.get(i + 1);
+                        String prev = tempWayNodes.get(i - 1);
+                        GraphDB.Node n1 = g.nodes.get(next);
+                        GraphDB.Node n2 = g.nodes.get(prev);
+                        g.nodes.get(s).connectedNodes.add(n1);
+                        g.nodes.get(s).connectedNodes.add(n2);
+                    }
+                }
+            }
         }
     }
 
