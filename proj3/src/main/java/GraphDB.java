@@ -8,6 +8,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Set;
 public class GraphDB {
     /** Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Node, Edge, etc. */
-    HashMap<String, Node> nodes;
+    HashMap<Long, Node> nodes;
 
     /**
      * Example constructor shows how to create and start an XML parser.
@@ -62,8 +63,12 @@ public class GraphDB {
      */
     private void clean() {
         // TODO: Your code here.
-        Set<String> ids = nodes.keySet();
-        for (String s : ids) {
+        Set<Long> ids = nodes.keySet();
+        Set<Long> temp = new HashSet<>();
+        for (Long l : ids) {
+            temp.add(l);
+        }
+        for (Long s : temp) {
             if (nodes.get(s).connectedNodes.isEmpty()) {
                 nodes.remove(s);
             }
@@ -76,7 +81,7 @@ public class GraphDB {
      */
     Iterable<Long> vertices() {
         //YOUR CODE HERE, this currently returns only an empty list.
-        return new ArrayList<Long>();
+        return nodes.keySet();
     }
 
     /**
@@ -85,7 +90,12 @@ public class GraphDB {
      * @return An iterable of the ids of the neighbors of v.
      */
     Iterable<Long> adjacent(long v) {
-        return null;
+        Node n = nodes.get(v);
+        Set<Long> ret = new HashSet<>();
+        for (Node t : n.connectedNodes) {
+            ret.add(t.ref);
+        }
+        return ret;
     }
 
     /**
@@ -146,7 +156,16 @@ public class GraphDB {
      * @return The id of the node in the graph closest to the target.
      */
     long closest(double lon, double lat) {
-        return 0;
+        long id = -1;
+        double dist = Double.MAX_VALUE;
+        for (Long l : vertices()) {
+            Node n = nodes.get(l);
+            if (distance(lon, lat, n.lon, n.lat) < dist) {
+                id = l;
+                dist = distance(lon, lat, n.lon, n.lat);
+            }
+        }
+        return id;
     }
 
     /**
@@ -155,7 +174,8 @@ public class GraphDB {
      * @return The longitude of the vertex.
      */
     double lon(long v) {
-        return 0;
+        Node n = nodes.get(v);
+        return n.lon;
     }
 
     /**
@@ -164,26 +184,21 @@ public class GraphDB {
      * @return The latitude of the vertex.
      */
     double lat(long v) {
-        return 0;
+        Node n = nodes.get(v);
+        return n.lat;
     }
 
     static class Node {
         double lon;
         double lat;
-        String ref;
+        long ref;
         ArrayList<Node> connectedNodes;
         boolean isLocation;
         String locName;
 
-        public Node (String ref, double lon, double lat) {
+        public Node (long ref, double lon, double lat) {
             this.lon = lon;
             this.lat = lat;
-            this.ref = ref;
-            isLocation = false;
-            connectedNodes = new ArrayList<>();
-        }
-
-        public Node (String ref) {
             this.ref = ref;
             isLocation = false;
             connectedNodes = new ArrayList<>();
