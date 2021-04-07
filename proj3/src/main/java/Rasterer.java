@@ -109,7 +109,7 @@ public class Rasterer {
                 * LONGTOFEET / MapServer.TILE_SIZE;
         // Have the greatest LonDPP that is less than or equal to the lonDPP of
         // the query box
-        int res = (int) Math.floor(Math.log(rootLonDPP / lonDPP) / Math.log(2));
+        int res = (int) Math.ceil(Math.log(rootLonDPP / lonDPP) / Math.log(2));
         if (res < 0) {
             res = 0;
         } else if (res > 7) {
