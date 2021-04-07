@@ -9,6 +9,20 @@ import java.util.Map;
  */
 public class Rasterer {
 
+    private String[][] renderGrid;
+    private int depth;
+    private double lrlon;
+    private double lrlat;
+    private double ullon;
+    private double ullat;
+    private double w;
+    private double h;
+    private static final int LONGTOFEET = 288200;
+    private double rasterullon;
+    private double rasterullat;
+    private double rasterlrlon;
+    private double rasterlrlat;
+
     public Rasterer() {
         // YOUR CODE HERE
     }
@@ -42,11 +56,69 @@ public class Rasterer {
      *                    forget to set this to true on success! <br>
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
-        // System.out.println(params);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
-                           + "your browser.");
+        lrlon = params.get("lrlon");
+        lrlat = params.get("lrlat");
+        ullon = params.get("ullon");
+        ullat = params.get("ullat");
+        w = params.get("w");
+        h = params.get("h");
+        // check the query validity
+        boolean valid = (MapServer.ROOT_ULLON <= ullon
+                && ullon <= lrlon
+                && lrlon <= MapServer.ROOT_LRLON)
+                && (MapServer.ROOT_ULLAT >= ullat
+                && ullat >= lrlat
+                && lrlat >= MapServer.ROOT_LRLAT);
+        if (!valid) {
+            results.put("query_succuss", false);
+            return results;
+        }
+        getDepth();
+        results.put("depth", depth);
+        getImages();
+        results.put("render_grid", renderGrid);
+        results.put("raster_ul_lon", rasterullon);
+        results.put("raster_ul_lat", rasterullat);
+        results.put("raster_lr_lon", rasterlrlon);
+        results.put("raster_lr_lat", rasterlrlat);
+        results.put("query_success", true);
         return results;
+    }
+
+    private void getDepth() {
+        double lonDPP = (lrlon - ullon) * LONGTOFEET / w;
+        double rootLonDPP = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON)
+                * LONGTOFEET / MapServer.TILE_SIZE;
+        // Have the greatest LonDPP that is less than or equal to the lonDPP of
+        // the query box
+        int res = (int) Math.floor(Math.log(rootLonDPP / lonDPP) / Math.log(2));
+        if (res < 0) {
+            res = 0;
+        } else if (res > 7) {
+            res = 7;
+        }
+        depth = res;
+    }
+
+    private void getImages() {
+        double lonDPP = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / Math.pow(2, depth);
+        double latDPP = (MapServer.ROOT_ULLAT - MapServer.ROOT_LRLAT) / Math.pow(2, depth);
+        int ulx = (int) Math.floor((ullon - MapServer.ROOT_ULLON) / lonDPP);
+        int uly = (int) Math.floor((MapServer.ROOT_ULLAT - ullat) / latDPP);
+        int lrx = (int) Math.floor((lrlon - MapServer.ROOT_ULLON) / lonDPP);
+        int lry = (int) Math.floor((MapServer.ROOT_ULLAT - lrlat) / latDPP);
+        renderGrid = new String[lrx - ulx + 1][lry - uly + 1];
+        for (int x = ulx; x <= lrx; x++) {
+            for (int y = uly; y <= lry; y++) {
+                String s = "d" + depth + "_x" + x + "_y" + y + ".png";
+                renderGrid[y - uly][x - ulx] = s;
+            }
+        }
+        rasterullon = ulx * lonDPP + MapServer.ROOT_ULLON;
+        rasterullat = MapServer.ROOT_ULLAT - uly * latDPP;
+        rasterlrlon = (lrx + 1) * lonDPP + MapServer.ROOT_ULLON;
+        rasterlrlat = MapServer.ROOT_ULLAT - (lry + 1) * latDPP;
     }
 
 }
