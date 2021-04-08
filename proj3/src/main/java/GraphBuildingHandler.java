@@ -42,6 +42,7 @@ public class GraphBuildingHandler extends DefaultHandler {
     private ArrayList<String> tempWayNodes;
     private boolean wayValid;
     long currentNodeRef;
+    String currentWayName;
 
     /**
      * Create a new GraphBuildingHandler.
@@ -80,6 +81,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             activeState = "way";
             wayValid = false;
             tempWayNodes = new ArrayList<>();
+            currentWayName = "";
 
         } else if (activeState.equals("way") && qName.equals("nd")) {
             String ref = attributes.getValue("ref");
@@ -94,6 +96,7 @@ public class GraphBuildingHandler extends DefaultHandler {
                     wayValid = true;
                 }
             } else if (k.equals("name")) {
+                currentWayName = v;
             }
         } else if (activeState.equals("node") && qName.equals("tag") && attributes.getValue("k")
                 .equals("name")) {
@@ -123,10 +126,12 @@ public class GraphBuildingHandler extends DefaultHandler {
                         Long next = Long.parseLong(tempWayNodes.get(i + 1));
                         GraphDB.Node n = g.nodes.get(next);
                         g.nodes.get(s).connectedNodes.add(n);
+                        g.nodes.get(s).wayNames.add(currentWayName);
                     } else if (i == tempWayNodes.size() - 1) {
                         Long prev = Long.parseLong(tempWayNodes.get(i - 1));
                         GraphDB.Node n = g.nodes.get(prev);
                         g.nodes.get(s).connectedNodes.add(n);
+                        g.nodes.get(s).wayNames.add(currentWayName);
                     } else {
                         Long next = Long.parseLong(tempWayNodes.get(i + 1));
                         Long prev = Long.parseLong(tempWayNodes.get(i - 1));
@@ -134,6 +139,8 @@ public class GraphBuildingHandler extends DefaultHandler {
                         GraphDB.Node n2 = g.nodes.get(prev);
                         g.nodes.get(s).connectedNodes.add(n1);
                         g.nodes.get(s).connectedNodes.add(n2);
+                        g.nodes.get(s).wayNames.add(currentWayName);
+                        g.nodes.get(s).wayNames.add(currentWayName);
                     }
                 }
             }

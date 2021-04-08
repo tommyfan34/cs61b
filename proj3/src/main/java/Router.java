@@ -1,6 +1,11 @@
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.PriorityQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Objects;
 
 /**
  * This class provides a shortestPath method for finding routes between two points
@@ -90,7 +95,60 @@ public class Router {
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
-        return null; // FIXME
+        List<NavigationDirection> ret = new ArrayList<>();
+        NavigationDirection current = new NavigationDirection();
+        double dist = 0;
+        double bearing = 0;
+        for (int i = 0; i < route.size(); i++) {
+            Long l = route.get(i);
+            if (i == 0) {
+                current.direction = NavigationDirection.START;
+                current.way = g.getWay(l, route.get(i + 1));
+                dist = g.distance(l, route.get(i + 1));
+                bearing = g.bearing(l, route.get(i + 1));
+            } else if (i == route.size() - 1) {
+                current.distance = dist;
+                ret.add(current);
+            } else {
+                if (g.getWay(l, route.get(i + 1)).equals(current.way)) {
+                    dist += g.distance(l, route.get(i + 1));
+                    bearing = g.bearing(l, route.get(i + 1));
+                } else {
+                    current.distance = dist;
+                    ret.add(current);
+                    current = new NavigationDirection();
+                    current.way = g.getWay(l, route.get(i + 1));
+                    current.direction = getDirection(bearing, g.bearing(l, route.get(i + 1)));
+                    dist = g.distance(l, route.get(i + 1));
+                    bearing = g.bearing(l, route.get(i + 1));
+                }
+            }
+        }
+        return ret;
+    }
+
+    private static int getDirection(double b1, double b2) {
+        double shift = b2 - b1;
+        if (shift > 180) {
+            shift -= 360;
+        } else if (shift < -180) {
+            shift += 360;
+        }
+        if (shift <= 15 && shift >= -15) {
+            return NavigationDirection.STRAIGHT;
+        } else if (shift < -15 && shift >= -30) {
+            return NavigationDirection.SLIGHT_LEFT;
+        } else if (shift > 15 && shift <= 30) {
+            return NavigationDirection.SLIGHT_RIGHT;
+        } else if (shift < -30 && shift >= -100) {
+            return NavigationDirection.LEFT;
+        } else if (shift > 30 && shift <= 100) {
+            return NavigationDirection.RIGHT;
+        } else if (shift < -100) {
+            return NavigationDirection.SHARP_LEFT;
+        } else {
+            return NavigationDirection.SHARP_RIGHT;
+        }
     }
 
 

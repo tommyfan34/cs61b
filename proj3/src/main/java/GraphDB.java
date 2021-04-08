@@ -192,6 +192,7 @@ public class GraphDB {
         double lat;
         long ref;
         ArrayList<Node> connectedNodes;
+        ArrayList<String> wayNames;
         boolean isLocation;
         String locName;
         double distToSrc;
@@ -204,7 +205,24 @@ public class GraphDB {
             this.ref = ref;
             isLocation = false;
             connectedNodes = new ArrayList<>();
+            wayNames = new ArrayList<>();
         }
+    }
+
+    public String getWay(long l1, long l2) {
+        Node n1 = nodes.get(l1);
+
+        int i;
+        for (i = 0; i < n1.connectedNodes.size(); i++) {
+            Node n2 = n1.connectedNodes.get(i);
+            if (n2.ref == l2) {
+                break;
+            }
+        }
+        if (i == n1.connectedNodes.size()) {
+            return null;
+        }
+        return n1.wayNames.get(i);
     }
 
 }
