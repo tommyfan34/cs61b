@@ -199,7 +199,7 @@ public class GraphDB {
         long edgeTo;
         boolean marked;
 
-        public Node (long ref, double lon, double lat) {
+        Node(long ref, double lon, double lat) {
             this.lon = lon;
             this.lat = lat;
             this.ref = ref;

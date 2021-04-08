@@ -61,11 +61,11 @@ public class Router {
 
         fringe.add(n);
         while (!fringe.isEmpty()) {
-            n = fringe.remove();
-            n.marked = true;
-            if (n.ref == t.ref) {
+            if (allConnectedMarked(g, tid)) {
                 break;
             }
+            n = fringe.remove();
+            n.marked = true;
             for (Long l : g.adjacent(n.ref)) {
                 if (!g.nodes.get(l).marked) {
                     if (n.distToSrc + g.distance(n.ref, l) < g.nodes.get(l).distToSrc) {
@@ -84,6 +84,20 @@ public class Router {
         ret.add(pt);
         Collections.reverse(ret);
         return ret;
+    }
+
+    private static boolean allConnectedMarked(GraphDB g, long target) {
+        GraphDB.Node n = g.nodes.get(target);
+        boolean ret = n.marked;
+        if (!ret) {
+            return false;
+        }
+        for (GraphDB.Node pt : n.connectedNodes) {
+            if (!pt.marked) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
