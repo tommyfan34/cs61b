@@ -1,3 +1,5 @@
+import edu.princeton.cs.algs4.Queue;
+
 /**
  * Class for doing Radix sort
  *
@@ -16,8 +18,37 @@ public class RadixSort {
      * @return String[] the sorted array
      */
     public static String[] sort(String[] asciis) {
-        // TODO: Implement LSD Sort
-        return null;
+        // find the longest string
+        int max = Integer.MIN_VALUE;
+        String[] toSort = new String[asciis.length];
+        int i = 0;
+        for (String s : asciis) {
+            max = max > s.length() ? max : s.length();
+            toSort[i++] = s;
+        }
+        i = 0;
+        while (i != max) {
+            Queue<String>[] q = new Queue[256];
+            for (int j = 0; j < 256; j++) {
+                q[j] = new Queue<>();
+            }
+            for (String s : toSort) {
+                int index = s.length() - i - 1;
+                if (index < 0) {
+                    q[0].enqueue(s);
+                    continue;
+                }
+                q[(int) s.charAt(index)].enqueue(s);
+            }
+            int k = 0;
+            for (int j = 0; j < 256; j++) {
+                while (!q[j].isEmpty()) {
+                    toSort[k++] = q[j].dequeue();
+                }
+            }
+            i++;
+        }
+        return toSort;
     }
 
     /**
@@ -44,5 +75,16 @@ public class RadixSort {
     private static void sortHelperMSD(String[] asciis, int start, int end, int index) {
         // Optional MSD helper method for optional MSD radix sort
         return;
+    }
+
+    public static void main(String[] args) {
+        String[] toSort = new String[5];
+        toSort[0] = "vsrls";
+        toSort[1] = "dfgjoa";
+        toSort[2] = "gkamv";
+        toSort[3] = "dffxvb";
+        toSort[4] = "fvsgaco";
+        String[] sorted = sort(toSort);
+        System.out.println(toSort);
     }
 }
