@@ -33,8 +33,8 @@ public class RadixSort {
                 q[j] = new Queue<>();
             }
             for (String s : toSort) {
-                int index = s.length() - i - 1;
-                if (index < 0) {
+                int index = max - i - 1;
+                if (index >= s.length()) {
                     q[0].enqueue(s);
                     continue;
                 }
@@ -80,11 +80,11 @@ public class RadixSort {
     public static void main(String[] args) {
         String[] toSort = new String[5];
         toSort[0] = "vsrls";
-        toSort[1] = "dfgjoa";
+        toSort[1] = "dfgjo";
         toSort[2] = "gkamv";
         toSort[3] = "dffxvb";
         toSort[4] = "fvsgaco";
         String[] sorted = sort(toSort);
-        System.out.println(toSort);
+        System.out.println((char)149);
     }
 }
