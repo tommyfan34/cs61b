@@ -1,4 +1,6 @@
 import edu.princeton.cs.algs4.Picture;
+
+import java.awt.*;
 import java.util.ArrayList;
 
 public class SeamCarver {
@@ -156,7 +158,8 @@ public class SeamCarver {
         Picture newPic = new Picture(height(), width());
         for (int x = 0; x < width(); x++) {
             for (int y = 0; y < height(); y++) {
-                newPic.setRGB(y, x, pic.getRGB(x, y));
+                Color c = pic.get(x, y);
+                newPic.set(y, x, c);
             }
         }
         pic = newPic;
