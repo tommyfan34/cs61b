@@ -101,6 +101,7 @@ public class GraphBuildingHandler extends DefaultHandler {
                 .equals("name")) {
             g.nodes.get(currentNodeRef).isLocation = true;
             g.nodes.get(currentNodeRef).locName = attributes.getValue("v");
+            g.trieset.put(attributes.getValue("v"));
         }
     }
 
@@ -119,6 +120,7 @@ public class GraphBuildingHandler extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if (qName.equals("way")) {
             if (wayValid && tempWayNodes.size() != 1) {
+                g.trieset.put(currentWayName);
                 for (int i = 0; i < tempWayNodes.size(); i++) {
                     Long s = Long.parseLong(tempWayNodes.get(i));
                     if (i == 0) {

@@ -24,6 +24,7 @@ public class GraphDB {
     /** Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Node, Edge, etc. */
     HashMap<Long, Node> nodes;
+    Trieset trieset = new Trieset();
 
     /**
      * Example constructor shows how to create and start an XML parser.
