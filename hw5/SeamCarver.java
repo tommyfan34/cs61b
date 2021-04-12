@@ -1,13 +1,13 @@
 import edu.princeton.cs.algs4.Picture;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
 
 public class SeamCarver {
     private Picture pic;
     private double[][] energies;
     public SeamCarver(Picture picture) {
-        pic = picture;
+        pic = new Picture(picture);
 
     }
 
@@ -34,17 +34,20 @@ public class SeamCarver {
         double energyX;
         double energyY;
 
-        energyX = Math.pow(pic.get(incX(x), y).getRed() - pic.get(decX(x), y).getRed(), 2) +
-                Math.pow(pic.get(incX(x), y).getGreen() - pic.get(decX(x), y).getGreen(), 2) +
-                Math.pow(pic.get(incX(x), y).getBlue() - pic.get(decX(x), y).getBlue(), 2);
-        energyY = Math.pow(pic.get(x, incY(y)).getRed() - pic.get(x, decY(y)).getRed(), 2) +
-                Math.pow(pic.get(x, incY(y)).getGreen() - pic.get(x, decY(y)).getGreen(), 2) +
-                Math.pow(pic.get(x, incY(y)).getBlue() - pic.get(x, decY(y)).getBlue(), 2);
+        energyX = Math.pow(pic.get(incX(x), y).getRed() - pic.get(decX(x), y).getRed(), 2)
+                + Math.pow(pic.get(incX(x), y).getGreen() - pic.get(decX(x), y).getGreen(), 2)
+                + Math.pow(pic.get(incX(x), y).getBlue() - pic.get(decX(x), y).getBlue(), 2);
+        energyY = Math.pow(pic.get(x, incY(y)).getRed() - pic.get(x, decY(y)).getRed(), 2)
+                + Math.pow(pic.get(x, incY(y)).getGreen() - pic.get(x, decY(y)).getGreen(), 2)
+                + Math.pow(pic.get(x, incY(y)).getBlue() - pic.get(x, decY(y)).getBlue(), 2);
         return energyX + energyY;
     }
 
     private int findMin(int x, int y) {
         ArrayList<Integer> toCompare = new ArrayList<>();
+        if (width() == 1) {
+            return 0;
+        }
         if (x == 0) {
             toCompare.add(x);
             toCompare.add(x + 1);
@@ -93,6 +96,9 @@ public class SeamCarver {
                     }
                 }
                 ret[y] = index;
+                if (height() == 1) {
+                    return ret;
+                }
                 index = path[index][y - 1];
             } else {
                 ret[y] = index;
