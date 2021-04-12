@@ -58,7 +58,7 @@ public class SeamCarver {
         }
         int index = 0;
         for (int i = 0; i < toCompare.size(); i++) {
-            if (energy(toCompare.get(i), y - 1) < energy(toCompare.get(index), y - 1)) {
+            if (energies[toCompare.get(i)][y - 1] < energies[toCompare.get(index)][y - 1]) {
                 index = i;
             }
         }
