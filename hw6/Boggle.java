@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
+
+import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.introcs.In;
 
 public class Boggle {
@@ -18,15 +20,45 @@ public class Boggle {
      *         have them in ascending alphabetical order.
      */
     public static List<String> solve(int k, String boardFilePath) {
+        if (k <= 0) {
+            throw new IllegalArgumentException("k is non positive");
+        }
         ArrayList<String> ret = new ArrayList<>();
         In in = new In(dictPath);
         Trieset trieset = new Trieset();
         while (in.hasNextLine()) {
             trieset.put(in.readLine());
         }
+        boolean test = trieset.hasWord("bs");
         Board board = new Board(boardFilePath);
-        boolean test = trieset.hasWord("b");
-        return null;
+
+        for (int row = 0; row < board.height(); row++) {
+            for (int col = 0; col < board.width(); col++) {
+                helperVisit(new Coordinate(row, col), "", trieset.root, trieset, board, ret);
+            }
+        }
+
+        return ret;
+    }
+
+    private static void helperVisit(Coordinate cor, String s, Trieset.Node node,
+                             Trieset trieset, Board board, ArrayList<String> ret) {
+        char c = board.getElem(cor);
+        node = trieset.getNext(node, c);
+        if (node == null) {
+            return;
+        }
+        board.visit(cor);
+        s += c;
+        if (node.exists) {
+            ret.add(s);
+        }
+        for (Coordinate neighbor : board.neighbors(cor)) {
+            if (!board.visited(neighbor)) {
+                helperVisit(neighbor, s, node, trieset, board, ret);
+            }
+        }
+        board.unvisit(cor);
     }
 
     public static void main(String[] args) {

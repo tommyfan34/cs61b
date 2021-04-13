@@ -5,14 +5,13 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class Trieset {
-    private Node root;
-    private Node next;
+    public Node root;
 
     public Trieset() {
         root = new Node('\0');
     }
 
-    private class Node {
+    public class Node {
         boolean exists;
         ArrayList<Node> nodes;
         char elem;
@@ -32,8 +31,8 @@ public class Trieset {
         if (s == null || s == "") {
             return;
         }
-        next = null;
-        if (!hasChar(n, s.charAt(0))) {
+        Node next = getNext(n, s.charAt(0));
+        if (next == null) {
             next = new Node(s.charAt(0));
             n.nodes.add(next);
         }
@@ -43,15 +42,6 @@ public class Trieset {
         put(s.substring(1), next);
     }
 
-    private boolean hasChar(Node n, char c) {
-        for (Node child : n.nodes) {
-            if (Character.toLowerCase(child.elem) == Character.toLowerCase((c))) {
-                next = child;
-                return true;
-            }
-        }
-        return false;
-    }
 
     public boolean hasWord(String s) {
         return hasWord(s, root);
@@ -61,8 +51,8 @@ public class Trieset {
         if (s == null || s == "") {
             return false;
         }
-        next = null;
-        if (!hasChar(n, s.charAt(0))) {
+        Node next = getNext(n, s.charAt(0));
+        if (next == null) {
             return false;
         }
         if (next.exists && s.length() == 1) {
@@ -70,5 +60,16 @@ public class Trieset {
         } else {
             return hasWord(s.substring(1), next);
         }
+    }
+
+    public Node getNext(Node n, char c) {
+        Node ret = null;
+        for (Node child : n.nodes) {
+            if (Character.toLowerCase(child.elem) == Character.toLowerCase((c))) {
+                ret = child;
+                return ret;
+            }
+        }
+        return ret;
     }
 }
