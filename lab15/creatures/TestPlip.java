@@ -36,7 +36,11 @@ public class TestPlip {
 
     @Test
     public void testReplicate() {
-
+        Plip p = new Plip(1.5);
+        Plip child = p.replicate();
+        assertEquals(1.5 / 2, child.energy(), 0.0001);
+        assertEquals(1.5 / 2, p.energy(), 0.0001);
+        assertNotSame(p, child);
     }
 
     //@Test
