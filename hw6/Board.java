@@ -3,15 +3,6 @@ import edu.princeton.cs.introcs.In;
 import java.util.ArrayList;
 
 public class Board {
-    private static final int NORTH = 0;
-    private static final int SOUTH = 1;
-    private static final int WEST = 2;
-    private static final int EAST = 3;
-    private static final int NORTHWEST = 4;
-    private static final int NORTHEAST = 5;
-    private static final int SOUTHWEST = 6;
-    private static final int SOUTHEAST = 7;
-
     private char[][] content;
     private boolean[][] visited;
     private int width;
