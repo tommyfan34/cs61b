@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.List;
+import edu.princeton.cs.introcs.In;
 
 public class Boggle {
     
@@ -16,7 +18,18 @@ public class Boggle {
      *         have them in ascending alphabetical order.
      */
     public static List<String> solve(int k, String boardFilePath) {
-        // YOUR CODE HERE
+        ArrayList<String> ret = new ArrayList<>();
+        In in = new In(dictPath);
+        Trieset trieset = new Trieset();
+        while (in.hasNextLine()) {
+            trieset.put(in.readLine());
+        }
+        Board board = new Board(boardFilePath);
+        boolean test = trieset.hasWord("b");
         return null;
+    }
+
+    public static void main(String[] args) {
+        List<String> result = solve(7, "exampleBoard.txt");
     }
 }
