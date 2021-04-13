@@ -1,6 +1,6 @@
 public class Coordinate {
-    public int row;
-    public int col;
+    int row;
+    int col;
 
     Coordinate(int row, int col) {
         this.row = row;

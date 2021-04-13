@@ -1,11 +1,7 @@
-import edu.princeton.cs.algs4.TrieSET;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 public class Trieset {
-    public Node root;
+    Node root;
 
     public Trieset() {
         root = new Node('\0');
@@ -16,7 +12,7 @@ public class Trieset {
         ArrayList<Node> nodes;
         char elem;
 
-        Node (char c) {
+        Node(char c) {
             elem = c;
             exists = false;
             nodes = new ArrayList<>();
@@ -28,7 +24,7 @@ public class Trieset {
     }
 
     private void put(String s, Node n) {
-        if (s == null || s == "") {
+        if (s == null || s.equals("")) {
             return;
         }
         Node next = getNext(n, s.charAt(0));
@@ -48,7 +44,7 @@ public class Trieset {
     }
 
     private boolean hasWord(String s, Node n) {
-        if (s == null || s == "") {
+        if (s == null || s.equals("")) {
             return false;
         }
         Node next = getNext(n, s.charAt(0));
