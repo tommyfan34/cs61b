@@ -54,7 +54,8 @@ public class BinaryTrie implements Serializable {
         return ret;
     }
 
-    private void helperBuildLookupTable(Node node, Map<Character, BitSequence> map, BitSequence sequence) {
+    private void helperBuildLookupTable(Node node, Map<Character, BitSequence> map,
+                                        BitSequence sequence) {
         if (node.left != null) {
             helperBuildLookupTable(node.left, map, sequence.appended(0));
         }
